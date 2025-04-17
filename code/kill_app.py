@@ -102,9 +102,15 @@ def kill_program_by_title(window_title):
 def open_cmd_and_run_py(py_file_path):
     """
     打开 cmd 窗口并执行指定的 Python 文件。
+    若传入的是相对路径，会自动转换为绝对路径。
 
-    :param py_file_path: 要执行的 Python 文件的路径
+    :param py_file_path: 要执行的 Python 文件的路径，可以是相对路径或绝对路径
     """
+    # 将相对路径转换为绝对路径
+    if not os.path.isabs(py_file_path):
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        py_file_path = os.path.join(base_dir, py_file_path)
+
     if not os.path.exists(py_file_path):
         print(f"文件 {py_file_path} 不存在，请检查路径。")
         return
@@ -134,5 +140,5 @@ if __name__ == "__main__":
     open_program(program_path)
     time.sleep(5)
 
-    # 使用相对路径调用 test.py
-    open_cmd_and_run_py("code\\test.py")
+    # 使用相对路径和绝对路径都可以 调用 test.py
+    open_cmd_and_run_py("C:\Users\Top\Desktop\FuYing\code\test.py")
