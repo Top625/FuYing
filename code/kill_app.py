@@ -80,24 +80,17 @@ def kill_program(program_name):
         except subprocess.CalledProcessError as e:
             print(f"使用 taskkill 结束 {program_name} 时出错: {e}")
 
-# 根据窗口标题关闭指定的窗口。
 def kill_program_by_title(window_title):
     """
     根据窗口标题关闭指定的窗口。
 
     :param window_title: 要关闭的窗口的标题
     """
-    print(f"开始查找标题为 {window_title} 的可见窗口...")  # 修改提示信息
     def callback(hwnd, _):
         if win32gui.IsWindowVisible(hwnd):
-            window_text = win32gui.GetWindowText(hwnd)
-            # 修改匹配条件为完全相等
-            if window_text == window_title:
-                print(f"找到标题为 {window_title} 的窗口，准备关闭...")
+            if window_title in win32gui.GetWindowText(hwnd):
                 win32gui.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
-                print(f"已发送关闭消息给标题为 {window_title} 的窗口")
     win32gui.EnumWindows(callback, None)
-    print(f"查找标题为 {window_title} 的窗口流程结束。")
 
 def open_cmd_and_run_py(py_file_path, window_title="新命令提示符窗口"):
     """
@@ -116,8 +109,8 @@ def open_cmd_and_run_py(py_file_path, window_title="新命令提示符窗口"):
         print(f"文件 {py_file_path} 不存在，请检查路径。")
         return
     try:
-        # 使用 /t 选项设置窗口标题
-        command = f"start cmd /k title {window_title} && python {py_file_path}"
+        # 分开设置标题和执行 Python 脚本
+        command = f"start cmd /k \"title {window_title} & python {py_file_path}\""
         subprocess.Popen(command, shell=True)
         print(f"已打开标题为 {window_title} 的 cmd 窗口并执行 {py_file_path}")
     except Exception as e:
@@ -127,15 +120,15 @@ if __name__ == "__main__":
 
     program_name = "wmain.exe"
     program_path = r"C:\\Wind\\Wind.NET.Client\\WindNET\\bin\\wmain.exe"
-    open_program(program_path)
-    time.sleep(5)
+    # open_program(program_path)
+    # time.sleep(5)
 
     # 关闭wind程序
     kill_program(program_name)
     time.sleep(5)
 
     # 关闭指定标题的 cmd 窗口，需要替换为实际的窗口标题
-    kill_program_by_title("命令提示符")
+    kill_program_by_title("运行 test.py 的窗口")
     time.sleep(5)
 
     # 打开wind程序
