@@ -24,21 +24,26 @@ def is_program_running(program_name):
     return False
 
 
-def open_program(program_name):
+def open_program(program_path):
     """
-    若指定程序未运行，则通过程序名打开 Windows 程序。
+    若指定程序未运行，则通过程序完整路径打开 Windows 程序。
 
-    :param program_name: 要打开的程序的名称，例如 "notepad.exe"
+    :param program_path: 要打开的程序的完整路径，例如 "C:\\Program Files\\SomeApp\\app.exe"
     """
+    # 从路径中提取程序名
+    program_name = os.path.basename(program_path)
     if is_program_running(program_name):
         print(f"{program_name} 已经在运行，无需再次打开。")
         return
+    if not os.path.exists(program_path):
+        print(f"指定的程序路径 {program_path} 不存在，请检查。")
+        return
     try:
-        # 直接使用程序名打开程序
-        subprocess.Popen(program_name)
+        # 直接使用程序路径打开程序
+        subprocess.Popen(program_path)
         print(f"{program_name} 已成功打开")
     except Exception as e:
-        print(f"打开 {program_name} 时出错: {e}")
+        print(f"打开 {program_path} 时出错: {e}")
 
 
 def kill_program(program_name):
@@ -112,11 +117,13 @@ def open_cmd_and_run_py(py_file_path):
 
 if __name__ == "__main__":
 
-    open_program("notepad.exe")
+    program_name = "wmain.exe"
+    program_path = r"C:\\Wind\\Wind.NET.Client\\WindNET\\bin\\wmain.exe"
+    open_program(program_path)
     time.sleep(5)
 
     # 关闭wind程序
-    kill_program("notepad.exe")
+    kill_program(program_name)
     time.sleep(5)
 
     # 关闭指定标题的 cmd 窗口，需要替换为实际的窗口标题
@@ -124,7 +131,7 @@ if __name__ == "__main__":
     time.sleep(5)
 
     # 打开wind程序
-    open_program("notepad.exe")
+    open_program(program_path)
     time.sleep(5)
 
     # 使用相对路径调用 test.py
