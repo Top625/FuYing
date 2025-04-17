@@ -99,12 +99,13 @@ def kill_program_by_title(window_title):
     win32gui.EnumWindows(callback, None)
     print(f"查找标题为 {window_title} 的窗口流程结束。")
 
-def open_cmd_and_run_py(py_file_path):
+def open_cmd_and_run_py(py_file_path, window_title="新命令提示符窗口"):
     """
     打开 cmd 窗口并执行指定的 Python 文件。
     若传入的是相对路径，会自动转换为绝对路径。
 
     :param py_file_path: 要执行的 Python 文件的路径，可以是相对路径或绝对路径
+    :param window_title: 要设置的 cmd 窗口标题，默认为 "新命令提示符窗口"
     """
     # 将相对路径转换为绝对路径
     if not os.path.isabs(py_file_path):
@@ -115,11 +116,12 @@ def open_cmd_and_run_py(py_file_path):
         print(f"文件 {py_file_path} 不存在，请检查路径。")
         return
     try:
-        command = f"start cmd /k python {py_file_path}"
+        # 使用 /t 选项设置窗口标题
+        command = f"start cmd /k title {window_title} && python {py_file_path}"
         subprocess.Popen(command, shell=True)
-        print(f"已打开 cmd 窗口并执行 {py_file_path}")
+        print(f"已打开标题为 {window_title} 的 cmd 窗口并执行 {py_file_path}")
     except Exception as e:
-        print(f"打开 cmd 窗口执行 {py_file_path} 时出错: {e}")
+        print(f"打开标题为 {window_title} 的 cmd 窗口执行 {py_file_path} 时出错: {e}")
 
 if __name__ == "__main__":
 
@@ -140,5 +142,5 @@ if __name__ == "__main__":
     open_program(program_path)
     time.sleep(5)
 
-    # 使用相对路径和绝对路径都可以 调用 test.py
-    open_cmd_and_run_py("C:\Users\Top\Desktop\FuYing\code\test.py")
+    # 使用相对路径调用 test.py 并设置 cmd 窗口标题
+    open_cmd_and_run_py("C:\\Users\\Top\\Desktop\\FuYing\\code\\test.py", "运行 test.py 的窗口")
