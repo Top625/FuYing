@@ -120,15 +120,15 @@ if __name__ == "__main__":
 
     program_name = "wmain.exe"
     program_path = r"C:\\Wind\\Wind.NET.Client\\WindNET\\bin\\wmain.exe"
-    # open_program(program_path)
-    # time.sleep(5)
+    open_program(program_path)
+    time.sleep(5)
 
     # 关闭wind程序
     kill_program(program_name)
     time.sleep(5)
 
     # 关闭指定标题的 cmd 窗口，需要替换为实际的窗口标题
-    kill_program_by_title("运行 test.py 的窗口")
+    kill_program_by_title("命令提示符")
     time.sleep(5)
 
     # 打开wind程序
