@@ -118,22 +118,26 @@ def open_cmd_and_run_py(py_file_path, window_title="新命令提示符窗口"):
 
 if __name__ == "__main__":
 
-    program_name = "WIM.exe"
-    # program_path = r"C:\\Wind\\Wind.NET.Client\\WindNET\\bin\\wmain.exe"
-    # open_program(program_path)
-    # time.sleep(5)
+    program_name = "wmain.exe"
+    program_path = r"C:\\Wind\\Wind.NET.Client\\WindNET\\bin\\wmain.exe"
+    open_program(program_path)
+    time.sleep(5)
 
     # 关闭wind程序
     kill_program(program_name)
     time.sleep(5)
 
-    # # 关闭指定标题的 cmd 窗口，需要替换为实际的窗口标题
-    # kill_program_by_title("命令提示符")
-    # time.sleep(5)
+    # 关闭WIM程序
+    kill_program("WIM.exe")
+    time.sleep(5)
 
-    # # 打开wind程序
-    # open_program(program_path)
-    # time.sleep(5)
+    # 关闭指定标题的 cmd 窗口，需要替换为实际的窗口标题
+    kill_program_by_title("命令提示符")
+    time.sleep(5)
 
-    # # 使用相对路径调用 test.py 并设置 cmd 窗口标题
-    # open_cmd_and_run_py("C:\\Users\\Top\\Desktop\\FuYing\\code\\test.py", "运行 test.py 的窗口")
+    # 打开wind程序
+    open_program(program_path)
+    time.sleep(5)
+
+    # 使用相对路径调用 test.py 并设置 cmd 窗口标题
+    open_cmd_and_run_py("C:\\Users\\Top\\Desktop\\FuYing\\code\\test.py", "运行 test.py 的窗口")
