@@ -37,7 +37,10 @@ def extract_split_zip(zip_file_path, extract_dir):
     extract_dir = Path(extract_dir)
     extract_dir.mkdir(exist_ok=True)
     part_number = 1
-    output_file_path = extract_dir / zip_file_path.stem.split('.')[0]
+    # 获取第一个分卷文件中的文件名（原文件名）
+    with zipfile.ZipFile(zip_file_path.parent / f"{zip_file_path.stem}.001", 'r') as first_zip:
+        original_file_name = first_zip.namelist()[0]
+    output_file_path = extract_dir / original_file_name
     with open(output_file_path, 'wb') as out_file:
         while True:
             zip_part_name = zip_file_path.parent / f"{zip_file_path.stem}.{part_number:03d}"
