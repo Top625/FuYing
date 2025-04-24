@@ -1,7 +1,10 @@
 import pandas as pd
+import numpy as np
 import model_function as mf
 import model_configuration as mc
+from datetime import datetime
 
+# 从 tong_hua_shun.py 复制过来的数据库连接逻辑
 con = mc.con
 channel = mc.channel
 chrome_driver = mc.chrome_driver
@@ -19,6 +22,25 @@ def add_data_to_db(file_path):
     try:
         # 读取 Excel 文件
         df = pd.read_excel(file_path)
+        
+        # 数据预处理：将 Code 列转换为字符串类型
+        df['Code'] = df['Code'].astype(str)
+        
+        # 转换 Date 列为 datetime 类型
+        df['Date'] = pd.to_datetime(df['Date'])
+        # 将 Date 列转换为 'YYYY-MM-DD' 格式的字符串
+        df['Date'] = df['Date'].dt.strftime('%Y-%m-%d')
+
+        # 检查是否有 Link 列，如果有则填充默认值
+        if 'Link' in df.columns:
+            df['Link'] = df['Link'].fillna('-')
+        else:
+            # 如果没有 Link 列，添加并填充默认值
+            df['Link'] = '----'
+
+        # 处理 RatingChange 列的 nan 值
+        if 'RatingChange' in df.columns:
+            df['RatingChange'] = df['RatingChange'].fillna('')
 
         cursor = con.cursor()
         for index, row in df.iterrows():
@@ -57,7 +79,12 @@ def add_data_to_db(file_path):
 
 if __name__ == "__main__":
     # 替换为实际的 Excel 文件绝对路径
-    excel_file_path = r'E:\New\ZYYX_BJ1_changed.xlsx'
-    add_data_to_db(excel_file_path)
+    current_date = datetime.now().strftime("%Y%m%d")
+    # 拼接指定路径
+    input_file_path = fr"E:\Data\ZYYX_BJ_{current_date}_changed.xlsx"
+    print(input_file_path)
+    # input_path = Path(input_file_path)
+    # excel_file_path = r'E:\New\ZYYX_BJ1_0changed.xlsx'
+    add_data_to_db(input_file_path)
     # 关闭数据库连接
     con.close()

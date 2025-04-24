@@ -1,5 +1,6 @@
 import pandas as pd
 from pathlib import Path
+from datetime import datetime
 
 def process_excel_file(input_path, output_path):
     """
@@ -19,7 +20,7 @@ def process_excel_file(input_path, output_path):
         'stock_name': 'Name',
         'title': 'Title',
         'author': 'Author',
-        'report_type': 'ReporType',
+        'report_type': 'ReportType',
         'rating_adjust_mark': 'RatingChange',
         'current_gg_rating': 'Rating'
     }
@@ -32,6 +33,10 @@ def process_excel_file(input_path, output_path):
         'id', 'report_id'
     ]
     df.drop(columns=columns_to_drop, errors='ignore', inplace=True)
+
+    # 调用 exchange_code 方法替换 Code 列的值
+    if 'Code' in df.columns:
+        df['Code'] = df['Code'].astype(str).apply(exchange_code)
 
     # 替换 RatingChange 列的值
     rating_change_mapping = {
@@ -79,10 +84,32 @@ def process_excel_file(input_path, output_path):
     df.to_excel(output_path, index=False)
     print(f"已成功将修改后的内容保存到 {output_path}")
 
+def exchange_code(input_str):
+    index = input_str.find('.')
+    if index != -1:
+        v_tem_code = input_str[:index]
+    else:
+        v_tem_code = input_str
+
+    # 根据股票代码开头判断交易所
+    if v_tem_code.startswith(('60', '68')):
+        exchange = 'SS'  # 上交所
+    elif v_tem_code.startswith(('00', '30')):
+        exchange = 'SZ'  # 深交所
+    elif v_tem_code.startswith(('43', '83', '87', '92')):  # 修正此处的语法错误
+        exchange = 'BJ'  # 北交所
+    else:
+        # 若无法判断，可根据实际情况处理，这里先默认返回原代码加未知交易所标识
+        exchange = ''
+    v_sql_code = (v_tem_code + "." + exchange).replace("'", "")
+    return v_sql_code
+
 
 if __name__ == "__main__":
     # 请根据实际情况修改输入文件路径
-    input_file_path = r"E:\New\ZYYX_BJ1.xlsx"
+    current_date = datetime.now().strftime("%Y%m%d")
+    # 拼接指定路径
+    input_file_path = fr"E:\Data\ZYYX_BJ_{current_date}.xlsx"
     input_path = Path(input_file_path)
     # 生成输出文件路径
     output_file_path = input_path.parent / f"{input_path.stem}_changed{input_path.suffix}"

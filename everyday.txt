@@ -9,6 +9,10 @@ wind fuying0625TOP$  @egicleasing.com
 证券 zhanghao0625 默认 运动 篮球
 基金 zhanghao0625 fuying0625RMB$ 勇士
 
+云机登录地址：https://gtja.yovole.com/Citrix/gtjaWeb/ 
+用户：VM-0000H
+新密码：  Crowndaisy@123456
+
 2025.4.23
 1、同步数据库
 2、调研美股、港股 虚拟资产 ETF
@@ -24,28 +28,26 @@ wind fuying0625TOP$  @egicleasing.com
 a、比较 表 与 数据库   Date, Code, Institution 不相等， 然后把 表数据 插入到 数据库
    如果数据不对，以哪个为准
    表格 stock_code  数据库 Code                      ------------
-   表格 stock_name  数据库 Name
-   表格 title   数据库 Title
-   表格 report_type 数据库 ReporType                 ***********
-   表格 organ_id    数据库                           ===========
    表格 organ_name  数据库 Institution               ------------
-   表格 author   数据库 Author
    表格 current_create_date   数据库 Date            ------------
 
+   表格 stock_name  数据库 Name
+   表格 title   数据库 Title
+   表格 author   数据库 Author
 
+   表格 report_type 数据库 ReporType                 ***********
 
+   表格 organ_id    数据库                           ===========
+   previous_create_date
+   entrytime
+   updatetime
+   tmstamp
 
-
-
-
-   表格   数据库 Institution
-
-
-
-
-b、rating_adjust_mark -------- RatingChange  没有--首次、1---维持、2----调低、3---- 调高
+b、rating_adjust_mark -------- RatingChange  空--首次、1---维持、2----调低、3---- 调高
 c、current_gg_rating -------- Rating 1 卖出, 2 减持  3中性  5增持  7买入  0 未知
-   
+  previous_gg_rating
+
+
 d、去重
 ----------------------------------------------------------------------------------------------------------------
 
