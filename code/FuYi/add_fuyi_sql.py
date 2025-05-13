@@ -3,6 +3,7 @@ import numpy as np
 import model_function as mf
 import model_configuration as mc
 from datetime import datetime
+import fuyi_log_xlsx as log_xlsx
 
 # 从 tong_hua_shun.py 复制过来的数据库连接逻辑
 con = mc.con
@@ -68,13 +69,32 @@ def add_data_to_db(file_path):
         # 提交事务
         con.commit()
         print("数据添加完成")
+        return True
     except Exception as e:
         print(f"读取文件或执行事务时出错: {e}")
         con.rollback()
+        return False
     finally:
         # 关闭游标
         if cursor:
             cursor.close()
+
+
+def retry_failed_db_insert(log_file_path):
+    status_list = log_xlsx.check_data_fetch_status(log_file_path, '插入数据库是否成功')
+    df = pd.read_excel(log_file_path, sheet_name='日志记录表格')
+    for task_name, time, db_insert_success in status_list:
+        if not db_insert_success:
+            mask = (df["任务名"] == task_name) & (df["时间"] == time)
+            local_path = df.loc[mask, "本地数据保存路径"].values[0]
+            success = add_data_to_db(local_path)
+            if success:
+                log_xlsx.update_log_data(
+                    file_path=log_file_path,
+                    task_name=task_name,
+                    time=time,
+                    db_insert_success=True
+                )
 
 
 if __name__ == "__main__":
@@ -83,8 +103,10 @@ if __name__ == "__main__":
     # 拼接指定路径
     input_file_path = fr"E:\Data\ZYYX_BJ_{current_date}_changed.xlsx"
     print(input_file_path)
-    # input_path = Path(input_file_path)
-    # excel_file_path = r'E:\New\ZYYX_BJ1_0changed.xlsx'
     add_data_to_db(input_file_path)
+
+    log_file_path = r'C:\Users\Top\Desktop\FuYing\code\FuYi\FuYiData\日志记录表格.xlsx'
+    retry_failed_db_insert(log_file_path)
+
     # 关闭数据库连接
     con.close()
