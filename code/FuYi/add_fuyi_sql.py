@@ -5,12 +5,11 @@ import model_configuration as mc
 from datetime import datetime
 import fuyi_log_xlsx as log_xlsx
 
-# 从 tong_hua_shun.py 复制过来的数据库连接逻辑
 con = mc.con
 channel = mc.channel
 chrome_driver = mc.chrome_driver
 
-sql_table_name = "Event_GSYJ_Pool_Top_test"
+sql_table_name = "Event_GSYJ_Pool02"
 
 
 def add_data_to_db(file_path):
@@ -34,10 +33,10 @@ def add_data_to_db(file_path):
 
         # 检查是否有 Link 列，如果有则填充默认值
         if 'Link' in df.columns:
-            df['Link'] = df['Link'].fillna('-')
+            df['Link'] = df['Link'].fillna('Top1')
         else:
             # 如果没有 Link 列，添加并填充默认值
-            df['Link'] = None
+            df['Link'] = 'Top2'
 
         # 处理 RatingChange 列的 nan 值
         if 'RatingChange' in df.columns:
@@ -98,12 +97,6 @@ def retry_failed_db_insert(log_file_path):
 
 
 if __name__ == "__main__":
-    # 替换为实际的 Excel 文件绝对路径
-    current_date = datetime.now().strftime("%Y%m%d")
-    # 拼接指定路径
-    input_file_path = fr"E:\Data\ZYYX_BJ_{current_date}_changed.xlsx"
-    print(input_file_path)
-    add_data_to_db(input_file_path)
 
     log_file_path = r'C:\Users\Top\Desktop\FuYing\code\FuYi\FuYiData\日志记录表格.xlsx'
     retry_failed_db_insert(log_file_path)

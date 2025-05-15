@@ -102,7 +102,7 @@ def exchange_code(input_str):
 
     # 根据股票代码开头判断交易所
     if v_tem_code.startswith(('60', '68')):
-        exchange = 'SS'  # 上交所
+        exchange = 'SH'  # 上交所
     elif v_tem_code.startswith(('00', '30')):
         exchange = 'SZ'  # 深交所
     elif v_tem_code.startswith(('43', '83', '87', '92')):
@@ -115,6 +115,7 @@ def exchange_code(input_str):
 
 def retry_failed_table_change(log_file_path):
     status_list = log_xlsx.check_data_fetch_status(log_file_path, '更改数据表格是否成功')
+    print(status_list)
     df = pd.read_excel(log_file_path, sheet_name='日志记录表格')
     for task_name, time, table_change_success in status_list:
         if not table_change_success:
@@ -131,10 +132,5 @@ def retry_failed_table_change(log_file_path):
 
 
 if __name__ == "__main__":
-    # 请根据实际情况修改输入文件路径
-    current_date = datetime.now().strftime("%Y%m%d")
-    file_path = fr"E:\Data\ZYYX_BJ_{current_date}.xlsx"
-    process_excel_file(file_path)
-
     log_file_path = r'C:\Users\Top\Desktop\FuYing\code\FuYi\FuYiData\日志记录表格.xlsx'
     retry_failed_table_change(log_file_path)

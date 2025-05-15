@@ -118,15 +118,23 @@ def update_log_with_result(log_file_path, result):
         )
 
 if __name__ == "__main__":
-    task_name = "任务1"
-    save_path = r'C:\Users\VM-0000H\eclipse-workspace\Test\src\Data'
+    task_name = "ZYYX"
+    # 将 task_name 拼接到 save_path
+    save_path = os.path.join(r'C:\Users\VM-0000H\eclipse-workspace\Test\src\Data', task_name)
+    log_file_path = r'C:\Users\Top\Desktop\FuYing\code\FuYi\FuYiData\日志记录表格.xlsx'
 
-    # 获取当天的数据
     today = datetime.now().strftime("'%Y-%m-%d'")
-    result = get_fuyi_data(task_name, save_path, time=today)
-
-    # 使用新方法更新日志
-    update_log_with_result(log_file_path, result)
+    log_xlsx.insert_log_data(
+        file_path=log_file_path,
+        task_name=task_name,
+        time=today,
+        data_fetch_success=False,
+        cloud_path=None,
+        copy_success=False,
+        local_path=None,
+        table_change_success=False,
+        db_insert_success=False
+    )
 
     # 检查日志文件中数据获取失败的天数
     status_list = log_xlsx.check_data_fetch_status(log_file_path, '数据获取是否成功')

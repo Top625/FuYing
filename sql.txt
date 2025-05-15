@@ -1,8 +1,8 @@
--- 复制表结构和数据
+-------------------------------------- 复制表结构和数据
 SELECT * INTO FinanceData..Event_GSYJ_Pool_Top_5_8 FROM FinanceData..Event_GSYJ_Pool;
 
 
--- 完全去重
+-------------------------------------- 完全去重
 WITH CTE AS (
     SELECT *,
     ROW_NUMBER() OVER (PARTITION BY Date, Code, Name, Rating, Abstract ORDER BY (SELECT NULL)) AS rn
@@ -14,8 +14,7 @@ SELECT * FROM CTE WHERE rn > 1;
 where Code like '%BJ'
 order by date desc
 
-
--- 查询类名 类型 是否为null
+--------------------------------------  查询类名 类型 是否为null
 SELECT 
     COLUMN_NAME AS 列名,
     DATA_TYPE AS 数据类型,
@@ -26,15 +25,15 @@ WHERE TABLE_NAME = 'Event_GSYJ_Pool'
 AND TABLE_SCHEMA = 'dbo'  -- 如果使用默认架构
 ORDER BY ORDINAL_POSITION;
 
--- 修改键
+--------------------------------------  修改键
 ALTER TABLE FinanceData..Event_GSYJ_Pool
 ALTER COLUMN Institution NVARCHAR(30) NOT NULL;
 
--- 设置主键
+--------------------------------------  设置主键
 ALTER TABLE FinanceData..Event_GSYJ_Pool
 ADD PRIMARY KEY (Date, Code, Name, Institution, Title);
 
--- 查询重复 数据
+--------------------------------------  查询重复 数据
 select DAte, Code, Name, Institution, Title, count(*) from FinanceData..Event_GSYJ_Pool
 group by DAte, Code, Name, Institution, Title
 having count(*)>1

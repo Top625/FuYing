@@ -111,6 +111,12 @@ def update_log_data(file_path=DEFAULT_SAVE_PATH, task_name=None, time=None, data
     try:
         # 读取现有的 Excel 文件
         df = pd.read_excel(file_path, sheet_name='日志记录表格')
+        
+        # 显式转换可能存储字符串的列的数据类型
+        str_columns = ["云电脑数据保存路径", "本地数据保存路径"]
+        for col in str_columns:
+            df[col] = df[col].astype(object)
+
         # 找到需要更新的行
         mask = (df["任务名"] == task_name) & (df["时间"] == time)
         rows_to_update = df[mask]
