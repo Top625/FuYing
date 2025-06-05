@@ -1,0 +1,56 @@
+{
+    "reverse": ["204001.SH", "131810.SZ", "888880.BJ"],
+    "products": [
+        {
+            "name": "九章量化",
+            "local_path": "C:/Users/Top/Desktop/九章量化/",
+            "codes": [
+                {
+                    "name": "国信证券",
+                    "other_name": "国信",
+                    "fund_account": ["190900011119"],
+                    "account_path": "/九章国信/成交/Stock/Account-",
+                    "position_path": "/九章国信/成交/Stock/PositionStatics-",
+                    "deal_path": "/九章国信/成交/Stock/Deal-"
+
+                },
+                {
+                    "name": "北京德外大街",
+                    "other_name": "国泰海通",
+                    "fund_account": ["9220717"],
+                    "account_path": "/FOF国君/成交/Stock/Account-",
+                    "position_path": "/FOF国君/成交/Stock/PositionStatics-",
+                    "deal_path": "/FOF国君/成交/Stock/Deal-"
+                }
+            ]
+        },
+        {
+            "name": "尊享2号",
+            "local_path": "C:/Users/Top/Desktop/尊享2号/",
+            "codes": [
+                {
+                    "name": "中泰XTP实盘_26节点",
+                    "other_name": "中泰",
+                    "fund_account": ["109157019055"],
+                    "account_path": "/尊享2号/成交/Stock/Account-",
+                    "position_path": "/尊享2号/成交/Stock/PositionStatics-",
+                    "deal_path": "/尊享2号/成交/Stock/Deal-"
+                }
+            ]
+        },
+        {
+            "name": "山西证券",
+            "local_path": "C:/Users/Top/Desktop/山西证券/",
+            "codes": [
+                {
+                    "name": "山西证券",
+                    "other_name": "山西证券",
+                    "fund_account": ["50186688"],
+                    "account_path": "/乔山西/成交/Stock/Account-",
+                    "position_path": "/乔山西/成交/Stock/PositionStatics-",
+                    "deal_path": "/乔山西/成交/Stock/Deal-"
+                }
+            ]
+        }
+    ]
+}

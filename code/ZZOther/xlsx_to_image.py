@@ -52,7 +52,7 @@ def xlsx_to_image(xlsx_path, output_image_path):
 
 
 if __name__ == "__main__":
-    xlsx_path = r'C:\Users\Top\Desktop\FuYing\code\FuYi\FuYiData\日志记录表格.xlsx'
-    output_image_path = r'C:\Users\Top\Desktop\FuYing\code\FuYi\FuYiData日志记录表格.png'
+    xlsx_path = r'C:\Users\Top\Desktop\每日收益.xlsx'
+    output_image_path = r'C:\Users\Top\Desktop\每日收益.png'
     result = xlsx_to_image(xlsx_path, output_image_path)
     print(f"操作是否成功: {result}")

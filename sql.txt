@@ -37,3 +37,6 @@ ADD PRIMARY KEY (Date, Code, Name, Institution, Title);
 select DAte, Code, Name, Institution, Title, count(*) from FinanceData..Event_GSYJ_Pool
 group by DAte, Code, Name, Institution, Title
 having count(*)>1
+--------------------------------------  增加列
+ALTER TABLE FinanceData..Wind_DXZF_Pool_Top
+ADD CSRCAcceptDate DATE;

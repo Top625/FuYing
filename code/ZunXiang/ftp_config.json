@@ -1,0 +1,16 @@
+{
+    "product_name": "富赢1号",
+    "local_path": "C:/Users/Top/Desktop/ftp/",
+    "products": {
+        "国信": {
+            "name": "九章国信",
+            "account_path": "/九章国信/成交/Stock/Account-",
+            "position_path": "/九章国信/成交/Stock/Position-"
+        },
+        "国泰海通": {
+            "name": "FOF国君",
+            "account_path": "/FOF国君/成交/Stock/Account-",
+            "position_path": "/FOF国君/成交/Stock/Position-"
+        }
+    }
+}

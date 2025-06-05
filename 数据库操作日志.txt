@@ -1,2 +1,95 @@
-            Event_GSYJ_Pool 公司研究
-2025.5.14   删除 Link = 'default_link' 的数据
+5.30
+一、申购与赎回
+1、增加表格 申购赎回
+CREATE TABLE Daily_SGSH (
+	Product NVARCHAR(50) NOT NULL,
+	Account NVARCHAR(50) NOT NULL,
+	Date DATE NOT NULL,
+	Amount MONEY NOT NULL
+);
+2、增加数据 
+INSERT INTO FinanceData..Daily_SGSH (Product, Account, Date, Amount, FundAccount)
+VALUES 
+    ('九章量化', '国信', '2025-06-03', 2500000, 190900011119),
+    ('九章量化', '国泰海通', '2025-06-03', 2570000, 9220717);
+3、删除所有数据
+DELETE FROM Daily_SGSH;
+4、查询
+select top 100 * from FinanceData..Daily_SGSH
+order by Date desc
+
+
+二、净值记录
+1、创建表格
+CREATE TABLE NetValueRecords (
+    -- 记录日期
+    Date DATE NOT NULL,
+    
+    -- 资产名称
+    Product NVARCHAR(100) NOT NULL,
+    
+    -- 资产份额净值（元），精确到小数点后4位
+    NetValue DECIMAL(10,4),
+    
+    -- 资产份额累计净值（元），精确到小数点后4位
+    NetValueSum DECIMAL(10,4),
+    
+    -- 资产份额净值估值（元），精确到小数点后4位
+    NetValueEst DECIMAL(10,4),
+    
+    
+    -- 约束：净值必须为正数
+    CONSTRAINT CHK_NetValue_Positive CHECK (NetValue > 0 AND NetValueSum > 0 AND NetValueEst>0)
+);
+2、增加数据
+
+三、账号、产品记录
+CREATE TABLE Daily_Product (
+    -- 记录时间
+    Date Date NOT NULL,
+    
+    -- 产品信息
+    Product VARCHAR(50) NOT NULL,
+    
+    -- 资产信息
+    TotalAssets DECIMAL(30,2) NOT NULL,      -- 总资产（元）
+    MarketValue DECIMAL(30,2) NOT NULL,      -- 市值（元）
+    Cash DECIMAL(30,2) NOT NULL,       -- 现金余额（元）
+    Position DECIMAL(5,2) NOT NULL, -- 仓位百分比（0-100）
+    
+    -- 日盈亏数据
+    DailyPer DECIMAL(7,4),       -- 日涨跌幅（%）
+    Daily DECIMAL(30,2),            -- 日盈亏（元）
+    
+    -- 月盈亏数据
+    MonthlyPer DECIMAL(7,4),     -- 月涨跌幅（%）
+    Monthly DECIMAL(30,2),          -- 月盈亏（元）
+    
+    -- 年盈亏数据
+    YearlyPer DECIMAL(7,4),      -- 年涨跌幅（%）
+    Yearly DECIMAL(30,2),           -- 年盈亏（元）
+    
+    -- 总盈亏数据
+    TotalPer DECIMAL(7,4),       -- 总涨跌幅（%）
+    Total DECIMAL(30,2),            -- 总盈亏（元）
+
+	NetValueEst DECIMAL(10,4),
+
+);
+
+Wind_GQJL_Pool
+
+5.23  恢复5.22
+--------------------------------------  增加列
+ALTER TABLE FinanceData..Wind_DXZF_Pool
+ADD CSRCAcceptDate DATE;
+--------------------------------------  找出B表中存在但A表中不存在的数据
+B表 Wind_DXZF_Pool_Top，A表Wind_DXZF_Pool
+SELECT s.*
+FROM FinanceData..Wind_DXZF_Pool_Top s
+LEFT JOIN FinanceData..Wind_DXZF_Pool e ON e.name = s.name and e.FirstPlanDate = s.FirstPlanDate
+WHERE e.name IS NULL
+order by FirstPlanDate desc;
+
+5.22  公司研究 Wind_DXZF_POOL Event_GSYJ_Pool_New 改为 Event_GSYJ_Pool， Event_GSYJ_Pool 改为 Event_GSYJ_Pool_Top_5_22
+5.14  Event_GSYJ_Pool 公司研究  删除 Link = 'default_link' 的数据
