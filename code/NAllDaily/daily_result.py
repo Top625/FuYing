@@ -1,56 +1,194 @@
-# 1、读取账号数据
-# 2、读取产品数据
-
-from datetime import datetime
-import pandas as pd
-import handle_sql
+from lark_oapi.client import config
+import win32com.client as win32
+import time
+from PIL import ImageGrab
+import send_as_bot
+import openpyxl
+from openpyxl.utils import get_column_letter
 import tool
-import os
+import handle_sql
+from datetime import datetime
 
-def export_daily_result():
-    today = datetime.today().strftime("%Y%m%d")
-    today_str = '20250604'
+
+def export_daily_result(date):
+
     config_data = tool.read_ftp_config()
-
     product_data = []
     account_data = []
 
     if config_data:
-        for product in config_data['products']:
-            product_name = product['name']
-            product_sql = handle_sql.select_product(today_str, product_name)
-            print('产品', product_sql)
-            product_data.extend(product_sql)
+        xlsx_config = config_data['xlsx_config']
+        print(xlsx_config)
 
-            fund_accounts = []
-            for code in product['codes']:
-                fund_accounts += code['fund_account']
+        # for product in config_data['products']:
+        #     product_name = product['name']
+        #     product_sql = handle_sql.select_product(date, product_name)
+        #     print('产品', product_sql)
+        #     product_data.extend(product_sql)
 
-            accounts = []
-            for fund_account in fund_accounts:
-                accounts += handle_sql.select_account(today_str, fund_account)
+        #     fund_accounts = []
+        #     for code in product['codes']:
+        #         fund_accounts += code['fund_account']
 
-            print('账号', accounts)
-            print('\n')
-            account_data.extend(accounts)
+        #     accounts = []
+        #     for fund_account in fund_accounts:
+        #         accounts += handle_sql.select_account(date, fund_account)
 
-    # 将产品和账号数据转换为 DataFrame
-    product_df = pd.DataFrame(product_data)
-    account_df = pd.DataFrame(account_data)
+        #     print('账号', accounts)
+        #     print('\n')
+        #     account_data.extend(accounts)
 
-    # 合并产品和账号 DataFrame
-    combined_df = pd.concat([product_df, account_df], ignore_index=True)
+        data_fields = ['netvalueest', 'totalassets', 'marketvalue', 'cash', 'position', 'dailyper']
 
-    # 定义保存文件的绝对路径和文件名
-    output_dir = r'C:\Users\Top\Desktop\FuYing\code\NAllDaily\output'
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    excel_file_name = f'{today}.xlsx'
-    excel_file_path = os.path.join(output_dir, excel_file_name)
+        shanxi_product_sql = handle_sql.select_product(date, '山西证券')
+        for field in data_fields:
+            config_key = f'ShanXi_{field}'
+            insert_data_to_excel(
+                xlsx_config[config_key]['row'],
+                xlsx_config[config_key]['col'],
+                shanxi_product_sql[0][field]
+            )
 
-    # 将数据保存到 Excel 文件中
-    combined_df.to_excel(excel_file_path, index=False)
-    print(f"数据已成功保存到 {excel_file_path} 文件中。")
+        zunxiang_product_sql = handle_sql.select_product(date, '尊享2号')
+        for field in data_fields:
+            config_key = f'ZunXiang_{field}'
+            insert_data_to_excel(
+                xlsx_config[config_key]['row'],
+                xlsx_config[config_key]['col'],
+                zunxiang_product_sql[0][field]
+            )
+        
+        jiuzhang_product_sql = handle_sql.select_product(date, '九章量化')
+        for field in data_fields:
+            config_key = f'JiuZhang_{field}'
+            insert_data_to_excel(
+                xlsx_config[config_key]['row'],
+                xlsx_config[config_key]['col'],
+                jiuzhang_product_sql[0][field]
+            )
 
+        data_fields = ['totalassets', 'marketvalue', 'cash', 'position', 'dailyper']
+        guoxin_account_sql = handle_sql.select_account(date, 190900011119)
+        for field in data_fields:
+            config_key = f'JiuZhang_GX_{field}'
+            insert_data_to_excel(
+                xlsx_config[config_key]['row'],
+                xlsx_config[config_key]['col'],
+                guoxin_account_sql[0][field]
+            )
+
+        guotai_account_sql = handle_sql.select_account(date, 9220717)
+        for field in data_fields:
+            config_key = f'JiuZhang_GT_{field}'
+            insert_data_to_excel(
+                xlsx_config[config_key]['row'],
+                xlsx_config[config_key]['col'],
+                guotai_account_sql[0][field]
+            )
+        
+        JiuZhang_GT_position_t = guotai_account_sql[0]['totalassets']/jiuzhang_product_sql[0]['totalassets']
+        JiuZhang_GX_position_t = guoxin_account_sql[0]['totalassets']/jiuzhang_product_sql[0]['totalassets']
+
+        JiuZhang_GT_position = guotai_account_sql[0]['position']
+        JiuZhang_GX_position = guoxin_account_sql[0]['position']
+        insert_data_to_excel(
+                xlsx_config['JiuZhang_GT_position']['row'],
+                xlsx_config['JiuZhang_GT_position']['col'],
+                JiuZhang_GT_position + f'({JiuZhang_GT_position_t*100:.2f}%)' 
+            ) 
+        insert_data_to_excel(
+                xlsx_config['JiuZhang_GX_position']['row'],
+                xlsx_config['JiuZhang_GX_position']['col'],
+                JiuZhang_GX_position + f'({JiuZhang_GX_position_t*100:.2f}%)' 
+            ) 
+            
+        insert_data_to_excel(xlsx_config['date']['row'], xlsx_config['date']['col'], date)
+        time.sleep(2)
+        capture_excel_screenshot()
+
+def capture_excel_screenshot():
+    """
+    根据绝对路径打开 Excel 表格，全屏显示，然后根据坐标点截取图片到指定路径。
+
+    :param file_path: Excel 文件的绝对路径
+    :param coordinates: 截图的坐标点，格式为 (left, top, right, bottom)
+    :param output_path: 截图保存的路径
+    :return: 操作成功返回 True，失败返回 False
+    """
+    # 启动 Excel 应用程序
+    excel = win32.gencache.EnsureDispatch('Excel.Application')
+    # 使 Excel 可见
+    excel.Visible = True
+    try:
+        config_data = tool.read_ftp_config()
+        xlsx_path = config_data['xlsx_path']
+        output_path = config_data['output_path']
+        coordinate = config_data['coordinate']
+        coordinates = (coordinate['left'], coordinate['top'], coordinate['right'], coordinate['bottom'])
+
+        # 打开工作簿
+        workbook = excel.Workbooks.Open(xlsx_path)
+        # 全屏显示 Excel 窗口
+        excel.Application.WindowState = -4137  # xlMaximized
+
+        # 等待 Excel 窗口完全加载
+        time.sleep(3)
+
+        # 进行截图
+        screenshot = ImageGrab.grab(bbox=coordinates)
+        # 保存截图
+        screenshot.save(output_path)
+
+        time.sleep(3)
+        send_as_bot.send_group_message("浩", True, output_path)
+    except Exception as e:
+        print(f"操作过程中出现错误: {e}")
+    finally:
+        # 关闭工作簿
+        if 'workbook' in locals():
+            workbook.Close(SaveChanges=False)
+        # 退出 Excel 应用程序
+        excel.Quit()
+
+def insert_data_to_excel(row, col, data):
+    """
+    向指定 Excel 文件的指定行列插入数据，支持合并单元格的情况。
+
+    :param file_path: Excel 文件的绝对路径
+    :param row: 要插入数据的行号（从 1 开始）
+    :param col: 要插入数据的列号（从 1 开始）
+    :param data: 要插入的数据
+    :return: 操作成功返回 True，失败返回 False
+    """
+    try:
+        config_data = tool.read_ftp_config()
+        xlsx_path = config_data['xlsx_path']
+        # 加载工作簿
+        workbook = openpyxl.load_workbook(xlsx_path)
+        # 获取活动工作表
+        sheet = workbook.active
+
+        # 检查指定位置是否在合并单元格内
+        for merged_range in sheet.merged_cells.ranges:
+            min_col, min_row, max_col, max_row = merged_range.bounds
+            if min_row <= row <= max_row and min_col <= col <= max_col:
+                # 如果在合并单元格内，找到合并单元格的左上角位置
+                sheet.cell(row=min_row, column=min_col, value=data)
+                break
+        else:
+            # 如果不在合并单元格内，直接插入数据
+            sheet.cell(row=row, column=col, value=data)
+
+        # 保存工作簿
+        workbook.save(xlsx_path)
+        return True
+    except Exception as e:
+        print(f"插入数据时出现错误: {e}")
+        return False
+
+# 使用示例
 if __name__ == "__main__":
-    export_daily_result()
+
+    today = datetime.today().strftime("%Y%m%d")
+    # today = '20250605'
+    export_daily_result(today)

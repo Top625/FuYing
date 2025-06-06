@@ -3,7 +3,7 @@ import email
 from email.header import decode_header
 import socket
 import os
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 import pandas as pd
 import numpy as np
 import handle_sql
@@ -99,8 +99,8 @@ def deal_net_value(file_path):
                     next_col_index = col_index + 1
                     if next_col_index < df.shape[1]:
                         net_value = df.iloc[row_index, next_col_index]
-                        handle_sql.add_net_value(date, '尊享2号', net_value, None, None)
-                        handle_sql.add_net_value(date, '山西证券', 1, None, None)
+                        handle_sql.update_net_value(date, '尊享2号', net_value, None, None)
+                        handle_sql.update_net_value(date, '山西证券', 1, None, None)
 
         elif '九章量化' in file_path:
             # 修改正则表达式以匹配日期
@@ -113,7 +113,7 @@ def deal_net_value(file_path):
                 if column_name in df.columns:
                     column_data = df[column_name]
                     if not column_data.empty:
-                        handle_sql.add_net_value(date, '九章量化', column_data.iloc[0], None, None)
+                        handle_sql.update_net_value(date, '九章量化', column_data.iloc[0], None, None)
                 else:
                     print(f"文件 {file_path} 中 {column_name} 列数据为空，请检查文件内容。")
 
@@ -163,29 +163,10 @@ def read_jiuzhang(date):
         print(f"读取文件 {file_path} 时出错: {e}")
         return None
 
-# def main():
-#     result = download_email_exl()
-    # if result:
-    #     today = datetime.today().strftime("%Y%m%d")
-    #     date = handle_sql.select_nearest_date('Daily_NetValue', today)
-    #     handle_sql.add_net_value(date, '山西证券', 1.0, None, None)
-
-    #     zunxiang_net_value = deal_zunxiang(date)
-    #     if zunxiang_net_value is not None:
-    #         print(f"尊享2号 单位净值为: {zunxiang_net_value}")
-    #         handle_sql.add_net_value(date, '尊享2号', zunxiang_net_value, None, None)
-    #     else:
-    #         print("未找到 尊享2号 单位净值信息。")
-        
-    #     jiuzhang_net_value = read_jiuzhang(date)
-    #     if jiuzhang_net_value is not None:
-    #         print(f"九章量化 单位净值为: {jiuzhang_net_value}")
-    #         handle_sql.add_net_value(date, '九章量化', jiuzhang_net_value, None, None)
-    #     else:
-    #         print("未找到 九章量化 单位净值信息。")
-    # else:
-    #     print("操作失败。")
-
 
 if __name__ == "__main__":
     download_email_exl()
+    # date = '20250605'
+    # handle_sql.add_net_value(date, '九章量化', None, None, 1.9514)
+    # handle_sql.add_net_value(date, '山西证券', 1, None, 1)
+    # handle_sql.add_net_value(date, '尊享2号', 1.0527, None, 1.0527)

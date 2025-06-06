@@ -1,6 +1,6 @@
 import tool
 import handle_sql
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 def select(today, fund_accounts):
@@ -41,8 +41,7 @@ def select(today, fund_accounts):
             print('申购赎回', sgsh_amount)
 
         # 上一个交易日
-        yesterday_date_str = handle_sql.select_nearest_date('Daily_Product', today)
-        yesterday_date_str = '20250604'
+        yesterday_date_str = handle_sql.get_previous_trading_day(today)
 
         product_history = handle_sql.select_product(yesterday_date_str, accounts[0]['product'])
         print('产品历史数据', product_history)
@@ -126,22 +125,11 @@ def deal():
 
     if config_data:
         for product in config_data['products']:
-            product_name = product['name']
             fund_accounts = []
             for code in product['codes']:
-                name = code['name']
-                other_name = code['other_name']
                 fund_accounts += code['fund_account']
             select(today, fund_accounts)
 
 
 if __name__ == "__main__":
     deal()
-
-    # TODO
-    # 读取数据库的account数据 根据时间、产品、账号、id  
-    # 合并 总资产 净资产  日盈亏、月盈亏、年盈亏、总盈亏   
-    # 变成 product 插入数据库 
-    # 然后合并成表格
-    # 根据日期 查询数据库
-    # 产品 账号 id

@@ -52,5 +52,45 @@
                 }
             ]
         }
-    ]
+    ],
+    "xlsx_path": "C:/Users/Top/Desktop/每日收益.xlsx",
+    "output_path": "C:/Users/Top/Desktop/每日收益.png",
+    "coordinate": {"left": 0, "top": 0, "right": 1000, "bottom": 500},
+    "xlsx_config": {
+        "date": {"name": "日期", "row": 2, "col": 1, "data": ""},
+        "ZunXiang_netvalueest": {"name": "尊享2号-单位净值", "row": 2, "col": 3, "data": ""},
+        "ShanXi_netvalueest": {"name": "山西证券-单位净值", "row": 4, "col": 3, "data": ""},
+        "JiuZhang_netvalueest": {"name": "九章量化-单位净值", "row": 6, "col": 3, "data": ""},
+
+        "ZunXiang_totalassets": {"name": "尊享2号-总资产", "row": 2, "col": 5, "data": ""},
+        "ShanXi_totalassets": {"name": "山西证券-总资产", "row": 4, "col": 5, "data": ""},
+        "JiuZhang_GX_totalassets": {"name": "九章量化-国信证券-总资产", "row": 6, "col": 5, "data": ""},
+        "JiuZhang_GT_totalassets": {"name": "九章量化-国泰海通-总资产", "row": 7, "col": 5, "data": ""},
+        "JiuZhang_totalassets": {"name": "九章量化-合计-总资产", "row": 8, "col": 5, "data": ""},
+
+
+        "ZunXiang_marketvalue": {"name": "尊享2号-市值", "row": 2, "col": 6, "data": ""},
+        "ShanXi_marketvalue": {"name": "山西证券-市值", "row": 4, "col": 6, "data": ""},
+        "JiuZhang_GX_marketvalue": {"name": "九章量化-国信证券-市值", "row": 6, "col": 6, "data": ""},
+        "JiuZhang_GT_marketvalue": {"name": "九章量化-国泰海通-市值", "row": 7, "col": 6, "data": ""},
+        "JiuZhang_marketvalue": {"name": "九章量化-合计-市值", "row": 8, "col": 6, "data": ""},
+
+        "ZunXiang_cash": {"name": "尊享2号-现金", "row": 2, "col": 7, "data": ""},
+        "ShanXi_cash": {"name": "山西证券-现金", "row": 4, "col": 7, "data": ""},
+        "JiuZhang_GX_cash": {"name": "九章量化-国信证券-现金", "row": 6, "col": 7, "data": ""},
+        "JiuZhang_GT_cash": {"name": "九章量化-国泰海通-现金", "row": 7, "col": 7, "data": ""},
+        "JiuZhang_cash": {"name": "九章量化-合计-现金", "row": 8, "col": 7, "data": ""},
+
+        "ZunXiang_position": {"name": "尊享2号-仓位(占总)", "row": 2, "col": 8, "data": ""},
+        "ShanXi_position": {"name": "山西证券-仓位(占总)", "row": 4, "col": 8, "data": ""},
+        "JiuZhang_GX_position": {"name": "九章量化-国信证券-仓位(占总)", "row": 6, "col": 8, "data": ""},
+        "JiuZhang_GT_position": {"name": "九章量化-国泰海通-仓位(占总)", "row": 7, "col": 8, "data": ""},
+        "JiuZhang_position": {"name": "九章量化-合计-仓位(占总)", "row": 8, "col": 8, "data": ""},
+
+        "ZunXiang_dailyper": {"name": "尊享2号-日涨跌幅", "row": 2, "col": 9, "data": ""},
+        "ShanXi_dailyper": {"name": "山西证券-日涨跌幅", "row": 4, "col": 9, "data": ""},
+        "JiuZhang_GX_dailyper": {"name": "九章量化-国信证券-日涨跌幅", "row": 6, "col": 9, "data": ""},
+        "JiuZhang_GT_dailyper": {"name": "九章量化-国泰海通-日涨跌幅", "row": 7, "col": 9, "data": ""},
+        "JiuZhang_dailyper": {"name": "九章量化-合计-日涨跌幅", "row": 8, "col": 9, "data": ""}
+    }
 }

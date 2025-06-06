@@ -1,3 +1,18 @@
+select top 100 * from FinanceData..Event_GSYJ_Pool02
+order by date desc
+
+
+6.6 去重
+WITH CTE AS (
+    SELECT *,
+           ROW_NUMBER() OVER (
+               PARTITION BY Date, Product, NetValue 
+               ORDER BY (SELECT NULL)
+           ) AS RowNum
+    FROM FinanceData..Daily_NetValue
+)
+DELETE FROM CTE WHERE RowNum > 1;
+
 5.30
 一、申购与赎回
 1、增加表格 申购赎回

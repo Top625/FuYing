@@ -1,8 +1,25 @@
 操作步骤
 
-1、3.10 download_ftp 从ftp中下载csv表格
-2、3.20 change_close_price 从redis数据库获取收盘价，然后更改表格
-3、3.25 deal_part_data 将各个账号插入到数据库
+1、3.10 download_ftp 从ftp中下载csv表格         
+2、3.20 deal_part_data 将各个账号插入到数据库
+3、3.30 get_email 获取净值并插入到数据库
+4、3.40 deal_all_account 将各个产品插入到数据库
+5、3.50 读取数据，插入表格、图片，发送给群里
+
+
+
+
+1、占总
+2、emial 更新表格，而不是增加
+3、account  中泰
+
+
+
+
+
+
+
+
 
 
 

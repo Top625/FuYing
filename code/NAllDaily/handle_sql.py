@@ -26,6 +26,26 @@ def select_product(date, product):
         print(f"执行查询时出错: {e}")
         return []
 
+def get_previous_trading_day(date):
+    try:
+        # 使用当前日期动态生成查询语句
+        query  = f"select FinanceData.dbo.func_dateaddstockday('{date}', -1, 'D')"
+        cursor = con.cursor()
+        cursor.execute(query)
+        results = cursor.fetchall()
+        if results:
+            # 获取日期值
+            previous_date = results[0][0]
+            if isinstance(previous_date, datetime):
+                return previous_date.strftime('%Y%m%d')
+            else:
+                return str(previous_date).replace('-', '').replace('/', '')[:8]
+        else:
+            return None
+    except Exception as e:
+        print(f"查询最近日期时出错: {e}")
+        return None
+
 # 查询离指定日期最近的一个日期
 def select_nearest_date(table_name, target_date_str):
     try:
@@ -231,6 +251,8 @@ def select_SGSH_amount(date, fund_account):
 
 if __name__ == "__main__":
     date = '20250605'
+    print(get_previous_trading_day(date))
+
     # print(select_nearest_date('Daily_Product', date)) 
     # product = '尊享2号'
     # account = '国信'
@@ -266,7 +288,7 @@ if __name__ == "__main__":
     date = '2025-06-03'
     fund_account = '190900011119'
     # print(select_account(date, fund_account))
-    print(select_account(date, fund_account))
+    # print(select_account(date, fund_account))
 
     
     # result = {

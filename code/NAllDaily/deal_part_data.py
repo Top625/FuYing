@@ -1,5 +1,4 @@
-import csv
-from datetime import datetime, timedelta
+from datetime import datetime
 import tool
 import deal_reverse
 import handle_sql
@@ -37,8 +36,6 @@ def deal_part_data(today, account_file, position_file, deal_local_path, product_
         print("以下代码在价格映射中缺失:", missing_codes)
 
     # 增加“收盘价”列，并赋值直接使用 holdings_df['代码'] 从价格映射中获取收盘价，特殊代码设为 0
-    reverse = ["204001.SH", "131810.SZ", "888880.BJ"] # TODO 读取配置文件
-
     holdings_df['收盘价'] = [
         0 if code in reverse else price_mapping.get(code, None) 
         for code in holdings_df['代码']
@@ -57,9 +54,8 @@ def deal_part_data(today, account_file, position_file, deal_local_path, product_
     cash = acconut_df['可用金额'].sum()
     print('account', total_assets, cash)
 
-    # 上一个交易日 TODO
-    yesterday_date_str = handle_sql.select_nearest_date('Daily_Account', today)
-    yesterday_date_str = '20250604'
+    # 上一个交易日 
+    yesterday_date_str = handle_sql.get_previous_trading_day(today)
 
     # 读取历史数据
     account_history = handle_sql.select_account(yesterday_date_str, fund_account[0])
