@@ -11,6 +11,7 @@ from datetime import datetime
 
 def export_daily_result():
     today = datetime.today().strftime("%Y%m%d")
+    today = '20250612'
     config_data = tool.read_ftp_config()
     product_data = []
     account_data = []
@@ -39,35 +40,69 @@ def export_daily_result():
 
         data_fields = ['netvalueest', 'totalassets', 'marketvalue', 'cash', 'position', 'dailyper']
 
-        shanxi_product_sql = handle_sql.select_product(date, '山西证券')
+        # 处理山西证券数据
+        shanxi_product_sql = handle_sql.select_product(today, '山西证券')
         for field in data_fields:
             config_key = f'ShanXi_{field}'
-            insert_data_to_excel(
-                xlsx_config[config_key]['row'],
-                xlsx_config[config_key]['col'],
-                shanxi_product_sql[0][field]
-            )
+            value = shanxi_product_sql[0][field]
+            if field == 'dailyper':
+                color = 'FF0000' if float(value.strip('%')) > 0 else '00FF00'
+                insert_data_to_excel(
+                    xlsx_config[config_key]['row'],
+                    xlsx_config[config_key]['col'],
+                    value,
+                    color
+                )
+            else:
+                insert_data_to_excel(
+                    xlsx_config[config_key]['row'],
+                    xlsx_config[config_key]['col'],
+                    value
+                )
 
-        zunxiang_product_sql = handle_sql.select_product(date, '尊享2号')
+        # 处理尊享2号数据
+        zunxiang_product_sql = handle_sql.select_product(today, '尊享2号')
         for field in data_fields:
             config_key = f'ZunXiang_{field}'
-            insert_data_to_excel(
-                xlsx_config[config_key]['row'],
-                xlsx_config[config_key]['col'],
-                zunxiang_product_sql[0][field]
-            )
-        
-        jiuzhang_product_sql = handle_sql.select_product(date, '九章量化')
+            value = zunxiang_product_sql[0][field]
+            if field == 'dailyper':
+                color = 'FF0000' if float(value.strip('%')) > 0 else '00FF00'
+                insert_data_to_excel(
+                    xlsx_config[config_key]['row'],
+                    xlsx_config[config_key]['col'],
+                    value,
+                    color
+                )
+            else:
+                insert_data_to_excel(
+                    xlsx_config[config_key]['row'],
+                    xlsx_config[config_key]['col'],
+                    value
+                )
+
+        # 处理九章量化数据
+        jiuzhang_product_sql = handle_sql.select_product(today, '九章量化')
         for field in data_fields:
             config_key = f'JiuZhang_{field}'
-            insert_data_to_excel(
-                xlsx_config[config_key]['row'],
-                xlsx_config[config_key]['col'],
-                jiuzhang_product_sql[0][field]
-            )
+            value = jiuzhang_product_sql[0][field]
+            if field == 'dailyper':
+                color = 'FF0000' if float(value.strip('%')) > 0 else '00FF00'
+                insert_data_to_excel(
+                    xlsx_config[config_key]['row'],
+                    xlsx_config[config_key]['col'],
+                    value,
+                    color
+                )
+            else:
+                insert_data_to_excel(
+                    xlsx_config[config_key]['row'],
+                    xlsx_config[config_key]['col'],
+                    value
+                )
 
+        # 处理账号数据
         data_fields = ['totalassets', 'marketvalue', 'cash', 'position', 'dailyper']
-        jiuzhang_product_sql = handle_sql.select_product(date, '九章量化')
+        jiuzhang_product_sql = handle_sql.select_product(today, '九章量化')
         accounts = [
             (190900011119, 'JiuZhang_GX'),
             (9220717, 'JiuZhang_GT'),
@@ -75,14 +110,24 @@ def export_daily_result():
         ]
 
         for account, prefix in accounts:
-            account_sql = handle_sql.select_account(date, account)
+            account_sql = handle_sql.select_account(today, account)
             for field in data_fields:
                 config_key = f'{prefix}_{field}'
-                insert_data_to_excel(
-                    xlsx_config[config_key]['row'],
-                    xlsx_config[config_key]['col'],
-                    account_sql[0][field]
-                )
+                value = account_sql[0][field]
+                if field == 'dailyper':
+                    color = 'FF0000' if float(value.strip('%')) > 0 else '00FF00'
+                    insert_data_to_excel(
+                        xlsx_config[config_key]['row'],
+                        xlsx_config[config_key]['col'],
+                        value,
+                        color
+                    )
+                else:
+                    insert_data_to_excel(
+                        xlsx_config[config_key]['row'],
+                        xlsx_config[config_key]['col'],
+                        value
+                    )
 
             position_t = account_sql[0]['totalassets'] / jiuzhang_product_sql[0]['totalassets']
             position = account_sql[0]['position']
@@ -92,7 +137,7 @@ def export_daily_result():
                 position + f'({position_t * 100:.2f}%)'
             )
 
-        insert_data_to_excel(xlsx_config['date']['row'], xlsx_config['date']['col'], date)
+        insert_data_to_excel(xlsx_config['date']['row'], xlsx_config['date']['col'], today)
         time.sleep(2)
         capture_excel_screenshot()
 
@@ -140,36 +185,56 @@ def capture_excel_screenshot():
         # 退出 Excel 应用程序
         excel.Quit()
 
-def insert_data_to_excel(row, col, data):
+def insert_data_to_excel(row, col, data, color=None):
     """
-    向指定 Excel 文件的指定行列插入数据，支持合并单元格的情况。
-
-    :param file_path: Excel 文件的绝对路径
+    向指定 Excel 文件的指定行列插入数据，支持合并单元格的情况和设置字体颜色
+    
     :param row: 要插入数据的行号（从 1 开始）
     :param col: 要插入数据的列号（从 1 开始）
     :param data: 要插入的数据
+    :param color: 可选，字体颜色(十六进制格式，如'FF0000'表示红色)
     :return: 操作成功返回 True，失败返回 False
     """
     try:
         config_data = tool.read_ftp_config()
         xlsx_path = config_data['xlsx_path']
-        # 加载工作簿
         workbook = openpyxl.load_workbook(xlsx_path)
-        # 获取活动工作表
         sheet = workbook.active
 
         # 检查指定位置是否在合并单元格内
         for merged_range in sheet.merged_cells.ranges:
             min_col, min_row, max_col, max_row = merged_range.bounds
             if min_row <= row <= max_row and min_col <= col <= max_col:
-                # 如果在合并单元格内，找到合并单元格的左上角位置
-                sheet.cell(row=min_row, column=min_col, value=data)
+                cell = sheet.cell(row=min_row, column=min_col)
+                cell.value = data
+                if color:
+                    # 保留原有字体样式，只修改颜色
+                    original_font = cell.font
+                    cell.font = openpyxl.styles.Font(
+                        name=original_font.name,
+                        size=original_font.size,
+                        bold=original_font.bold,
+                        italic=original_font.italic,
+                        underline=original_font.underline,
+                        strike=original_font.strike,
+                        color=color
+                    )
                 break
         else:
-            # 如果不在合并单元格内，直接插入数据
-            sheet.cell(row=row, column=col, value=data)
+            cell = sheet.cell(row=row, column=col)
+            cell.value = data
+            if color:
+                original_font = cell.font
+                cell.font = openpyxl.styles.Font(
+                    name=original_font.name,
+                    size=original_font.size,
+                    bold=original_font.bold,
+                    italic=original_font.italic,
+                    underline=original_font.underline,
+                    strike=original_font.strike,
+                    color=color
+                )
 
-        # 保存工作簿
         workbook.save(xlsx_path)
         return True
     except Exception as e:
