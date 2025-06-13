@@ -2,7 +2,7 @@ import pandas as pd
 import tool
 import codecs
 
-def process_csv_file(csv_file_path):
+def process_csv_file(csv_file_path, fund_account):
     """
     处理 CSV 文件，根据 reverse 数组匹配证券代码列，累加成交金额并打印匹配数据。
     :param csv_file_path: CSV 文件的绝对路径
@@ -18,8 +18,10 @@ def process_csv_file(csv_file_path):
     try:
         bmgs = codecs.open(csv_file_path, "r").encoding  # 获取 文件的编码格式
         df = pd.read_csv(csv_file_path, encoding=bmgs)
+        filtered_df = df[df['资金账号'].astype(str) == str(fund_account)]
+
         # 修改匹配逻辑，使用简化后的代码进行匹配
-        matched_df = df[df['证券代码'].astype(str).str.contains('|'.join(simplified_codes))]
+        matched_df = filtered_df[filtered_df['证券代码'].astype(str).str.contains('|'.join(simplified_codes))]
         total_amount = matched_df['成交金额'].sum()
         print("匹配到的数据:")
         print(matched_df[['证券代码', '成交金额']])

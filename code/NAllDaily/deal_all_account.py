@@ -113,9 +113,8 @@ def select(today, fund_accounts):
             'Total': round(total_total, 2),
             'NetValueEst': round(net_value_est, 4)
         }
-        print('结果-----------', result)
         handle_sql.add_product(result)
-        handle_sql.add_net_value(today, accounts[0]['product'], None, None, round(net_value_est, 4))
+        handle_sql.add_net_value(today, accounts[0]['product'], None, round(net_value_est, 4))
 
 
 def deal():

@@ -99,8 +99,7 @@ def deal_net_value(file_path):
                     next_col_index = col_index + 1
                     if next_col_index < df.shape[1]:
                         net_value = df.iloc[row_index, next_col_index]
-                        handle_sql.update_net_value(date, '尊享2号', net_value, None, None)
-                        handle_sql.update_net_value(date, '山西证券', 1, None, None)
+                        handle_sql.update_net_value(date, '尊享2号', net_value, None)
 
         elif '九章量化' in file_path:
             # 修改正则表达式以匹配日期
@@ -113,7 +112,7 @@ def deal_net_value(file_path):
                 if column_name in df.columns:
                     column_data = df[column_name]
                     if not column_data.empty:
-                        handle_sql.update_net_value(date, '九章量化', column_data.iloc[0], None, None)
+                        handle_sql.update_net_value(date, '九章量化', column_data.iloc[0], None)
                 else:
                     print(f"文件 {file_path} 中 {column_name} 列数据为空，请检查文件内容。")
 
@@ -134,6 +133,7 @@ def deal_zunxiang(date):
             next_col_index = col_index + 1
             if next_col_index < df.shape[1]:
                 net_value = df.iloc[row_index, next_col_index]
+                handle_sql.add_net_value(date, '尊享2号', net_value, None)
                 return net_value
 
         print(f"文件 {file_path} 中未找到 '单位净值：'，请检查文件结构。")
@@ -145,7 +145,7 @@ def deal_zunxiang(date):
 def read_jiuzhang(date):
     try:
         column_name='资产份额净值(元)'
-        file_path = fr'C:\Users\Top\Desktop\email\基金净值信息_富赢尊享2号私募证券投资基金_({date}).xls'
+        file_path = fr'C:\Users\Top\Desktop\富赢九章量化1号私募证券投资基金_SXA689_基金每日净值表_({date}).xls'
         # file_path = r'C:\Users\Top\Desktop\FuYing\code\NAllDaily\富赢九章量化1号私募证券投资基金_SXA689_基金每日净值表_2025-06-03.xls'
         df = pd.read_excel(file_path)
         if column_name in df.columns:
@@ -166,7 +166,7 @@ def read_jiuzhang(date):
 
 if __name__ == "__main__":
     download_email_exl()
-    # date = '20250605'
+    # date = '20250609'
     # handle_sql.add_net_value(date, '九章量化', None, None, 1.9514)
     # handle_sql.add_net_value(date, '山西证券', 1, None, 1)
-    # handle_sql.add_net_value(date, '尊享2号', 1.0527, None, 1.0527)
+    # handle_sql.add_net_value(date, '尊享2号', None, None, 1.0779)

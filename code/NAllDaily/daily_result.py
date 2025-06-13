@@ -9,9 +9,8 @@ import tool
 import handle_sql
 from datetime import datetime
 
-
-def export_daily_result(date):
-
+def export_daily_result():
+    today = datetime.today().strftime("%Y%m%d")
     config_data = tool.read_ftp_config()
     product_data = []
     account_data = []
@@ -68,40 +67,31 @@ def export_daily_result(date):
             )
 
         data_fields = ['totalassets', 'marketvalue', 'cash', 'position', 'dailyper']
-        guoxin_account_sql = handle_sql.select_account(date, 190900011119)
-        for field in data_fields:
-            config_key = f'JiuZhang_GX_{field}'
+        jiuzhang_product_sql = handle_sql.select_product(date, '九章量化')
+        accounts = [
+            (190900011119, 'JiuZhang_GX'),
+            (9220717, 'JiuZhang_GT'),
+            (109157018941, 'JiuZhang_ZT')
+        ]
+
+        for account, prefix in accounts:
+            account_sql = handle_sql.select_account(date, account)
+            for field in data_fields:
+                config_key = f'{prefix}_{field}'
+                insert_data_to_excel(
+                    xlsx_config[config_key]['row'],
+                    xlsx_config[config_key]['col'],
+                    account_sql[0][field]
+                )
+
+            position_t = account_sql[0]['totalassets'] / jiuzhang_product_sql[0]['totalassets']
+            position = account_sql[0]['position']
             insert_data_to_excel(
-                xlsx_config[config_key]['row'],
-                xlsx_config[config_key]['col'],
-                guoxin_account_sql[0][field]
+                xlsx_config[f'{prefix}_position']['row'],
+                xlsx_config[f'{prefix}_position']['col'],
+                position + f'({position_t * 100:.2f}%)'
             )
 
-        guotai_account_sql = handle_sql.select_account(date, 9220717)
-        for field in data_fields:
-            config_key = f'JiuZhang_GT_{field}'
-            insert_data_to_excel(
-                xlsx_config[config_key]['row'],
-                xlsx_config[config_key]['col'],
-                guotai_account_sql[0][field]
-            )
-        
-        JiuZhang_GT_position_t = guotai_account_sql[0]['totalassets']/jiuzhang_product_sql[0]['totalassets']
-        JiuZhang_GX_position_t = guoxin_account_sql[0]['totalassets']/jiuzhang_product_sql[0]['totalassets']
-
-        JiuZhang_GT_position = guotai_account_sql[0]['position']
-        JiuZhang_GX_position = guoxin_account_sql[0]['position']
-        insert_data_to_excel(
-                xlsx_config['JiuZhang_GT_position']['row'],
-                xlsx_config['JiuZhang_GT_position']['col'],
-                JiuZhang_GT_position + f'({JiuZhang_GT_position_t*100:.2f}%)' 
-            ) 
-        insert_data_to_excel(
-                xlsx_config['JiuZhang_GX_position']['row'],
-                xlsx_config['JiuZhang_GX_position']['col'],
-                JiuZhang_GX_position + f'({JiuZhang_GX_position_t*100:.2f}%)' 
-            ) 
-            
         insert_data_to_excel(xlsx_config['date']['row'], xlsx_config['date']['col'], date)
         time.sleep(2)
         capture_excel_screenshot()
@@ -140,7 +130,7 @@ def capture_excel_screenshot():
         screenshot.save(output_path)
 
         time.sleep(3)
-        send_as_bot.send_group_message("浩", True, output_path)
+        send_as_bot.send_group_message(config_data['feishu_group_name'], True, output_path)
     except Exception as e:
         print(f"操作过程中出现错误: {e}")
     finally:
@@ -188,7 +178,4 @@ def insert_data_to_excel(row, col, data):
 
 # 使用示例
 if __name__ == "__main__":
-
-    today = datetime.today().strftime("%Y%m%d")
-    # today = '20250605'
-    export_daily_result(today)
+    export_daily_result()

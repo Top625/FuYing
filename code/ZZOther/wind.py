@@ -1,5 +1,10 @@
 from WindPy import w
 
+# USDCNY.EX	美元中间价
+# JSHDBL	结算汇兑比率
+# HKDCNY.EX	港币中间价
+# CKHL	参考汇率
+
 w.start()
 # 命令如何写可以用命令生成器来辅助完成
 # 定义打印输出函数，用来展示数据使用
@@ -16,9 +21,12 @@ def printpy(outdata):
         print(strTemp)
 
 # 通过wsd来提取时间序列数据，比如取开高低收成交量，成交额数据
-print('\n\n'+'-----通过wsd来提取时间序列数据，比如取开高低收成交量，成交额数据-----'+'\n')
-wsddata1=w.wsd("000001.SZ", "open,high,low,close,volume,amt", "2015-11-22", "2015-12-22", "Fill=Previous")
-printpy(wsddata1)
+# print('\n\n'+'-----通过wsd来提取时间序列数据，比如取开高低收成交量，成交额数据-----'+'\n')
+# wsddata1=w.wsd("000001.SZ", "open,high,low,close,volume,amt", "2015-11-22", "2015-12-22", "Fill=Previous")
+wsddata2 = w.wsd("JSHDBL", "pre_close,open,high,low,close,amt,turn,adjfactor", "2025-06-01", "2025-06-11", "unit=1;TradingCalendar=HKEX;Fill=Previous;Currency=HKD;PriceAdj=B")
+# printpy(wsddata2)
+data=w.edb("EMM00058124,EMM00058126", "IsLatest=0,StartDate=2023-12-20,EndDate=2023-12-21")
+print(data)
 
 # # 通过wsd来提取各个报告期财务数据
 # print('\n\n'+'-----通过wsd来提取各个报告期财务数据-----'+'\n')
