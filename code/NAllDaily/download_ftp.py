@@ -26,7 +26,6 @@ def download_files():
     AFtp.set_pasv(True)
 
     today = datetime.today().strftime("%Y%m%d")
-    today = '20250612'
     config_data = tool.read_ftp_config()
     
     if config_data:

@@ -11,15 +11,12 @@ from datetime import datetime
 
 def export_daily_result():
     today = datetime.today().strftime("%Y%m%d")
-    today = '20250612'
     config_data = tool.read_ftp_config()
     product_data = []
     account_data = []
 
     if config_data:
         xlsx_config = config_data['xlsx_config']
-        print(xlsx_config)
-
         # for product in config_data['products']:
         #     product_name = product['name']
         #     product_sql = handle_sql.select_product(date, product_name)
