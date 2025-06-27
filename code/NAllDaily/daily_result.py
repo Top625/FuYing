@@ -9,40 +9,23 @@ import tool
 import handle_sql
 from datetime import datetime
 
+# 删除缓存 Remove-Item -Path $env:TEMP\gen_py -Recurse -Force
+
 def export_daily_result():
     today = datetime.today().strftime("%Y%m%d")
-    config_data = tool.read_ftp_config()
-    product_data = []
-    account_data = []
+    yesterday = handle_sql.get_previous_trading_day(today)
 
+    config_data = tool.read_ftp_config()
     if config_data:
         xlsx_config = config_data['xlsx_config']
-        # for product in config_data['products']:
-        #     product_name = product['name']
-        #     product_sql = handle_sql.select_product(date, product_name)
-        #     print('产品', product_sql)
-        #     product_data.extend(product_sql)
-
-        #     fund_accounts = []
-        #     for code in product['codes']:
-        #         fund_accounts += code['fund_account']
-
-        #     accounts = []
-        #     for fund_account in fund_accounts:
-        #         accounts += handle_sql.select_account(date, fund_account)
-
-        #     print('账号', accounts)
-        #     print('\n')
-        #     account_data.extend(accounts)
-
-        data_fields = ['netvalueest', 'totalassets', 'marketvalue', 'cash', 'position', 'dailyper']
+        data_fields = ['netvalueest', 'totalassets', 'marketvalue', 'cash', 'position', 'dailyper', 'daily', 'monthlyper', 'monthly', 'yearlyper', 'yearly', 'totalper', 'total']
 
         # 处理山西证券数据
         shanxi_product_sql = handle_sql.select_product(today, '山西证券')
         for field in data_fields:
             config_key = f'ShanXi_{field}'
             value = shanxi_product_sql[0][field]
-            if field == 'dailyper':
+            if field.endswith('per'):
                 color = 'FF0000' if float(value.strip('%')) > 0 else '00FF00'
                 insert_data_to_excel(
                     xlsx_config[config_key]['row'],
@@ -58,11 +41,18 @@ def export_daily_result():
                 )
 
         # 处理尊享2号数据
+        yesterday_zunxing = handle_sql.select_product(yesterday, '尊享2号')
+        insert_data_to_excel(
+            xlsx_config['ZunXiang_cost']['row'],
+            xlsx_config['ZunXiang_cost']['col'],
+            yesterday_zunxing[0]['cost']
+        )
+
         zunxiang_product_sql = handle_sql.select_product(today, '尊享2号')
         for field in data_fields:
             config_key = f'ZunXiang_{field}'
             value = zunxiang_product_sql[0][field]
-            if field == 'dailyper':
+            if field.endswith('per'):
                 color = 'FF0000' if float(value.strip('%')) > 0 else '00FF00'
                 insert_data_to_excel(
                     xlsx_config[config_key]['row'],
@@ -78,11 +68,17 @@ def export_daily_result():
                 )
 
         # 处理九章量化数据
+        yesterday_jiuzhang = handle_sql.select_product(yesterday, '九章量化')
+        insert_data_to_excel(
+            xlsx_config['JiuZhang_cost']['row'],
+            xlsx_config['JiuZhang_cost']['col'],
+            yesterday_jiuzhang[0]['cost']
+        )
         jiuzhang_product_sql = handle_sql.select_product(today, '九章量化')
         for field in data_fields:
             config_key = f'JiuZhang_{field}'
             value = jiuzhang_product_sql[0][field]
-            if field == 'dailyper':
+            if field.endswith('per'):
                 color = 'FF0000' if float(value.strip('%')) > 0 else '00FF00'
                 insert_data_to_excel(
                     xlsx_config[config_key]['row'],
@@ -98,7 +94,7 @@ def export_daily_result():
                 )
 
         # 处理账号数据
-        data_fields = ['totalassets', 'marketvalue', 'cash', 'position', 'dailyper']
+        data_fields = ['totalassets', 'marketvalue', 'cash', 'position', 'dailyper', 'daily', 'monthlyper', 'monthly', 'yearlyper', 'yearly', 'totalper', 'total']
         jiuzhang_product_sql = handle_sql.select_product(today, '九章量化')
         accounts = [
             (190900011119, 'JiuZhang_GX'),
@@ -111,7 +107,7 @@ def export_daily_result():
             for field in data_fields:
                 config_key = f'{prefix}_{field}'
                 value = account_sql[0][field]
-                if field == 'dailyper':
+                if field.endswith('per'):
                     color = 'FF0000' if float(value.strip('%')) > 0 else '00FF00'
                     insert_data_to_excel(
                         xlsx_config[config_key]['row'],

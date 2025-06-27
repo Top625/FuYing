@@ -4,6 +4,8 @@ import deal_reverse
 import handle_sql
 import pandas as pd
 from get_price import getLatestPriceByRedisCache
+from datetime import datetime, timedelta
+import csv
 
 def RepairACodeProc(ACode):
     Result=ACode
@@ -48,7 +50,7 @@ def deal_part_data(today, account_file, position_file, deal_local_path, product_
         ]
 
         market_value = (filtered_holdings_df['收盘价'] * filtered_holdings_df['当前拥股']).sum()
-        daily_profit_sum = filtered_holdings_df['盈亏'].sum()
+        daily_profit_sum = filtered_holdings_df['当日盈亏'].sum()
         # 将资产占比列的百分比字符串转换为小数
         filtered_holdings_df['资产占比'] = filtered_holdings_df['资产占比'].str.rstrip('%').astype(float) / 100
         position_ratio_sum = filtered_holdings_df['资产占比'].sum()
@@ -81,8 +83,9 @@ def deal_part_data(today, account_file, position_file, deal_local_path, product_
         if isinstance(subscription_redemption, (list, tuple)) and len(subscription_redemption) == 0:
             sgsh_amount = 0
         else:
-            sgsh_amount = float(subscription_redemption[0]['amount'])
-            print('申购赎回', subscription_redemption[0])
+            sgsh_amount = sum(float(item['amount']) for item in subscription_redemption)
+            # sgsh_amount = float(subscription_redemption[0]['amount'])
+            print('申购赎回', sgsh_amount)
         print('申购赎回金额：', sgsh_amount)
 
         # 计算日涨跌幅
@@ -92,36 +95,60 @@ def deal_part_data(today, account_file, position_file, deal_local_path, product_
         else:
             daily_return = (total_assets + abs(sgsh_amount) - yesterday_total_assets) / (yesterday_total_assets - abs(sgsh_amount)) if (yesterday_total_assets - abs(sgsh_amount)) != 0 else 0
 
-        # # 计算月起始日期
-        # last_month_date = current_date - timedelta(days=30)
-        # # 计算年起始日期
-        # last_year_date = current_date - timedelta(days=365)
+        # 将 today 转换为日期类型
+        today = datetime.strptime(today, '%Y%m%d')
 
-        # TODO 计算月涨跌幅和月盈亏
-        # monthly_return, monthly_profit = calculate_period_stats(historical_data, last_month_date, current_date,
-        #                                                         today, account_name, daily_return)
-        monthly_return = None
-        monthly_profit = None
-        if monthly_return is None:
-            monthly_return = daily_return
-            monthly_profit = daily_profit_sum
+        # 计算月起始日期
+        last_month_date = today.replace(month=today.month, year=today.year, day=1)
+        # 计算年起始日期
+        last_year_date = today.replace(year=today.year, month=1, day=1)
 
-        # # 计算年涨跌幅和年盈亏
-        # annual_return, annual_profit = calculate_period_stats(historical_data, last_year_date, current_date,
-        #                                                       today, account_name, daily_return)
-        annual_return = None
-        if annual_return is None:
-            annual_return = daily_return
-            annual_profit = daily_profit_sum
+        # 计算月涨跌幅和月盈亏
+        monthly_data = handle_sql.select_account_by_range(last_month_date.strftime('%Y%m%d'), today.strftime('%Y%m%d'), fund_account)
+        print('月数据', monthly_data)
+        if not monthly_data.empty:
+            monthly_profit = monthly_data['daily'].sum()
+            monthly_profit += daily_profit_sum
+            monthly_return = 1
+            for daily_per in monthly_data['dailyper']:
+                daily_per_value = float(daily_per.strip('%')) / 100
+                monthly_return *= (1 + daily_per_value)
+            monthly_return *= (1 + daily_return)
+            monthly_return -= 1
+        else:
+            monthly_return = 0
+            monthly_profit = 0
 
-        # # 计算总涨跌幅和总盈亏
-        # total_return, total_profit = calculate_period_stats(historical_data, datetime.min, current_date,
-        #                                                      today, account_name, daily_return)
-        total_return = None
-        if total_return is None:
-            total_return = daily_return
-            total_profit = daily_profit_sum
-    
+        # 计算年涨跌幅和年盈亏
+        annual_data = handle_sql.select_account_by_range(last_year_date.strftime('%Y%m%d'), today.strftime('%Y%m%d'), fund_account)
+        if not annual_data.empty:
+            annual_profit = annual_data['daily'].sum()
+            annual_profit += daily_profit_sum
+            annual_return = 1
+            for daily_per in annual_data['dailyper']:
+                daily_per_value = float(daily_per.strip('%')) / 100
+                annual_return *= (1 + daily_per_value)
+            annual_return *= (1 + daily_return)
+            annual_return -= 1
+        else:
+            annual_return = 0
+            annual_profit = 0
+
+        # 计算总涨跌幅和总盈亏
+        start_date = '19000101'
+        total_data = handle_sql.select_account_by_range(start_date, today.strftime('%Y%m%d'), fund_account)
+        if not total_data.empty:
+            total_profit = total_data['daily'].sum()
+            total_profit += daily_profit_sum
+            total_return = 1
+            for daily_per in total_data['dailyper']:
+                daily_per_value = float(daily_per.strip('%')) / 100
+                total_return *= (1 + daily_per_value)
+            total_return *= (1 + daily_return)
+            total_return -= 1
+        else:
+            total_return = 0
+            total_profit = 0
 
         # 计算国债逆回购
         reverse = deal_reverse.process_csv_file(deal_local_path, fund_account)
@@ -129,7 +156,7 @@ def deal_part_data(today, account_file, position_file, deal_local_path, product_
 
         # 生成结果
         result = {
-            'Date': today,
+            'Date': today.strftime('%Y%m%d'),
             'FundAccount': fund_account,
             'Account': other_name,
             'Product': product_name,
@@ -148,6 +175,68 @@ def deal_part_data(today, account_file, position_file, deal_local_path, product_
         }
         print("结果----", result)
         handle_sql.add_account(result)
+
+def add_2hao_sql():
+    import pandas as pd
+    # 假设 CSV 文件路径，需替换为实际路径
+    csv_file_path = 'C:/Users/Top/Desktop/尊享2号 _product.csv'
+    try:
+        # 读取 CSV 文件
+        df = pd.read_csv(csv_file_path, encoding=tool.detect_encoding(csv_file_path))
+        # 遍历 DataFrame 中的每一行
+        for index, row in df.iterrows():
+            result = row.to_dict()
+            formatted_result = {
+                'Date': result.get('Date', ''),
+                'Product': result.get('Product', ''),
+                'DailyPer': f"{float(result.get('DailyPer', 0)):.2f}%",
+                'Daily': round(float(result.get('Daily', 0)), 2)
+            }
+            print(formatted_result)
+            # # 使用 handle_sql.add_account(result) 插入数据
+            # result = {'Date': 20250603, 'FundAccount': 109157019055, 'Account': '中泰证券', 'Product': '尊享2号', 'DailyPer': '1.07%', 'Daily': 181024.81}
+            # 转换 Date 字段为日期字符串
+            if 'Date' in formatted_result:
+                date_str = str(formatted_result['Date'])
+                formatted_result['Date'] = f'{date_str[:4]}-{date_str[4:6]}-{date_str[6:]}'
+            # 然后再调用插入数据的方法
+            handle_sql.add_product(formatted_result)
+        print('数据插入成功')
+    except Exception as e:
+        print(f'数据插入失败: {e}')
+
+
+def iterate_dates(date_list):
+    config = tool.read_ftp_config()
+    if config:
+        reverse_flag = config['reverse']
+        for date in date_list:
+            for product_info in config['products']:
+                product_title = product_info['name']
+                for code_info in product_info['codes']:
+                    code_name = code_info['name']
+                    accounts = code_info['fund_account']
+
+                    position_path = product_info['local_path']+f'{code_name}-PositionStatics-{date}.csv'
+                    account_path = product_info['local_path']+f'{code_name}-Account-{date}.csv'
+                    deal_path = product_info['local_path']+f'{code_name}-Deal-{date}.csv'
+
+                    deal_part_data(date, account_path, position_path, deal_path, product_title, code_name, accounts, reverse_flag)
+
+
+def main_test():
+    from datetime import datetime, timedelta
+
+    start_date = datetime.strptime('20250513', '%Y%m%d')
+    end_date = datetime.strptime('20250603', '%Y%m%d')
+    current_date = start_date
+    date_list = []
+    while current_date <= end_date:
+        current_dates_str = current_date.strftime('%Y%m%d')
+        if handle_sql.check_isstockday(current_dates_str):
+            date_list.append(current_dates_str)
+        current_date += timedelta(days=1)
+    iterate_dates(date_list)
 
 
 def main():
@@ -172,3 +261,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # main_test()
+    # add_2hao_sql()

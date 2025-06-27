@@ -36,7 +36,6 @@ def process_csv_file(csv_file_path, fund_account):
 
 
 if __name__ == "__main__":
-    # 请将此路径替换为实际的 CSV 文件绝对路径
     today = '20250604'
     csv_file_path = rf'C:\Users\Top\Desktop\山西证券\山西证券-Deal-{today}.csv'
     result = process_csv_file(csv_file_path)
@@ -53,6 +52,3 @@ if __name__ == "__main__":
     csv_file_path = rf'C:\Users\Top\Desktop\九章量化\国信证券-Deal-{today}.csv'
     result = process_csv_file(csv_file_path)
     print(f"国信证券: {result}")
-
-    # + 9000
-

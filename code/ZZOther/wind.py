@@ -23,9 +23,12 @@ def printpy(outdata):
 # 通过wsd来提取时间序列数据，比如取开高低收成交量，成交额数据
 # print('\n\n'+'-----通过wsd来提取时间序列数据，比如取开高低收成交量，成交额数据-----'+'\n')
 # wsddata1=w.wsd("000001.SZ", "open,high,low,close,volume,amt", "2015-11-22", "2015-12-22", "Fill=Previous")
-wsddata2 = w.wsd("JSHDBL", "pre_close,open,high,low,close,amt,turn,adjfactor", "2025-06-01", "2025-06-11", "unit=1;TradingCalendar=HKEX;Fill=Previous;Currency=HKD;PriceAdj=B")
-# printpy(wsddata2)
-data=w.edb("EMM00058124,EMM00058126", "IsLatest=0,StartDate=2023-12-20,EndDate=2023-12-21")
+# wsddata2 = w.wsd("JSHDBL", "pre_close,open,high,low,close,amt,turn,adjfactor", "2025-06-01", "2025-06-11", "unit=1;TradingCalendar=HKEX;Fill=Previous;Currency=HKD;PriceAdj=B")
+# # printpy(wsddata2)
+# data=w.edb("EMM00058124,EMM00058126", "IsLatest=0,StartDate=2023-12-20,EndDate=2023-12-21")
+data = w.wsd("0003.HK", "sec_name,trade_code,pre_close,open,high,low,close,amt,adjfactor,turn", "2025-06-01", "2025-06-17", "unit=1;TradingCalendar=HKEX;PriceAdj=B")
+
+w.wsd("0003.HK", "sec_name,trade_code,pre_close,open,high,low,close,amt,adjfactor,turn", "2025-06-01", "2025-06-17", "unit=1;TradingCalendar=HKEX")
 print(data)
 
 # # 通过wsd来提取各个报告期财务数据

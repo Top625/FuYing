@@ -3,11 +3,12 @@ import email
 from email.header import decode_header
 import socket
 import os
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
 import handle_sql
 import re
+import tool
 
 def download_email_exl():
     # 配置邮箱信息
@@ -17,7 +18,8 @@ def download_email_exl():
     IMAP_PORT = 993
 
     # 定义保存附件的绝对路径目录，可根据实际情况修改
-    attachment_dir = r'C:\Users\Top\Desktop\email'
+    config_data = tool. read_ftp_config()
+    attachment_dir = config_data['email_path']
     if not os.path.exists(attachment_dir):
         os.makedirs(attachment_dir)
 
@@ -86,20 +88,35 @@ def download_email_exl():
 
 def deal_net_value(file_path):
     try:
-        # 修改判断逻辑，使用 in 关键字
         if '尊享2号' in file_path:
             match = re.search(r'\((.*?)\)', file_path)
             if match:
                 date = match.group(1)
                 df = pd.read_excel(file_path)
-                row_index, col_index = np.where(df.applymap(lambda x: '单位净值：' in str(x) if pd.notna(x) else False))
-                if len(row_index) > 0 and len(col_index) > 0:
-                    row_index = row_index[0]
-                    col_index = col_index[0]
-                    next_col_index = col_index + 1
-                    if next_col_index < df.shape[1]:
-                        net_value = df.iloc[row_index, next_col_index]
-                        handle_sql.update_net_value(date, '尊享2号', net_value, None)
+
+                def find_value(df, keyword):
+                    row_index, col_index = np.where(df.applymap(lambda x: keyword in str(x) if pd.notna(x) else False))
+                    if len(row_index) > 0 and len(col_index) > 0:
+                        row_index = row_index[0]
+                        col_index = col_index[0]
+                        next_col_index = col_index + 1
+                        if next_col_index < df.shape[1]:
+                            value = df.iloc[row_index, next_col_index]
+                            return value
+                    return None
+
+                total = find_value(df, '资产总值（元）：')
+                net_total = find_value(df, '资产净值（元）：')
+                cost = round((float(total) - float(net_total)), 2)
+                net_value = find_value(df, '单位净值：')
+                result = {
+                    'NetAssetsE': net_total,
+                    'TotalAssetsE': total,
+                    'Cost': cost
+                }
+                print('尊享2号', date, total, net_total, cost, net_value)
+                handle_sql.update_product(date, '尊享2号', result)
+                handle_sql.update_net_value(date, '尊享2号', net_value, None)
 
         elif '九章量化' in file_path:
             # 修改正则表达式以匹配日期
@@ -107,66 +124,26 @@ def deal_net_value(file_path):
             print('九章量化', match)
             if match:
                 date = match.group(1)
-                column_name='资产份额净值(元)'
                 df = pd.read_excel(file_path)
-                if column_name in df.columns:
-                    column_data = df[column_name]
-                    if not column_data.empty:
-                        handle_sql.update_net_value(date, '九章量化', column_data.iloc[0], None)
-                else:
-                    print(f"文件 {file_path} 中 {column_name} 列数据为空，请检查文件内容。")
+
+                net_total = float(df['资产净值(元)'].iloc[0].replace(',', ''))
+                total = float(df['资产总值(元)'].iloc[0].replace(',', ''))
+                cost = round((float(total) - float(net_total)), 2)
+                net_value = df['资产份额净值(元)'].iloc[0]
+                result = {
+                    'NetAssetsE': net_total,
+                    'TotalAssetsE': total,
+                    'Cost': cost
+                }
+                print('九章量化', date, net_total, total, cost, net_value)
+                handle_sql.update_product(date, '九章量化', result)  
+                handle_sql.update_net_value(date, '九章量化', net_value, None)
 
     except Exception as e:
         print(f"读取文件 {file_path} 时出错: {e}")
-
-
-
-def deal_zunxiang(date):
-    try:
-        file_path = fr'C:\Users\Top\Desktop\email\基金净值信息_富赢尊享2号私募证券投资基金_({date}).xls'
-        # file_path = r'C:\Users\Top\Desktop\FuYing\code\NAllDaily\基金净值信息_富赢尊享2号私募证券投资基金_(2025-06-03).xls'
-        df = pd.read_excel(file_path)
-        row_index, col_index = np.where(df.applymap(lambda x: '单位净值：' in str(x) if pd.notna(x) else False))
-        if len(row_index) > 0 and len(col_index) > 0:
-            row_index = row_index[0]
-            col_index = col_index[0]
-            next_col_index = col_index + 1
-            if next_col_index < df.shape[1]:
-                net_value = df.iloc[row_index, next_col_index]
-                handle_sql.add_net_value(date, '尊享2号', net_value, None)
-                return net_value
-
-        print(f"文件 {file_path} 中未找到 '单位净值：'，请检查文件结构。")
-        return None
-    except Exception as e:
-        print(f"读取文件 {file_path} 时出错: {e}")
-        return None
-
-def read_jiuzhang(date):
-    try:
-        column_name='资产份额净值(元)'
-        file_path = fr'C:\Users\Top\Desktop\富赢九章量化1号私募证券投资基金_SXA689_基金每日净值表_({date}).xls'
-        # file_path = r'C:\Users\Top\Desktop\FuYing\code\NAllDaily\富赢九章量化1号私募证券投资基金_SXA689_基金每日净值表_2025-06-03.xls'
-        df = pd.read_excel(file_path)
-        if column_name in df.columns:
-            column_data = df[column_name]
-            # 只返回 Series 的第一个值
-            if not column_data.empty:
-                return column_data.iloc[0]
-            else:
-                print(f"文件 {file_path} 中 {column_name} 列数据为空，请检查文件内容。")
-                return None
-        else:
-            print(f"文件 {file_path} 中未找到名为 {column_name} 的列，请检查文件结构。")
-            return None
-    except Exception as e:
-        print(f"读取文件 {file_path} 时出错: {e}")
-        return None
-
 
 if __name__ == "__main__":
     download_email_exl()
-    # date = '20250609'
-    # handle_sql.add_net_value(date, '九章量化', None, None, 1.9514)
-    # handle_sql.add_net_value(date, '山西证券', 1, None, 1)
-    # handle_sql.add_net_value(date, '尊享2号', None, None, 1.0779)
+    # path = "C:/Users/Top/Desktop/email/富赢九章量化1号私募证券投资基金_SXA689_基金每日净值表_2025-06-24.xls"  
+    # path = "C:/Users/Top/Desktop/email/基金净值信息_富赢尊享2号私募证券投资基金_(2025-06-24).xls"  
+    # deal_net_value(path)
