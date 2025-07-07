@@ -15,7 +15,7 @@ def select(today, fund_accounts, is_first: Bool):
     total_totalassets = 0
     total_marketvalue = 0
     total_cash = 0
-    total_daily = 0
+    # total_daily = 0
     sgsh_amount = 0
     
     if accounts:
@@ -24,8 +24,8 @@ def select(today, fund_accounts, is_first: Bool):
             total_marketvalue += account['marketvalue']
             total_cash += account['cash']
 
-            total_daily += account['daily']
-            print('total_daily', total_daily, account)
+            # total_daily += account['daily']
+            print('total_daily', account)
 
             # 获取申购赎回金额
             subscription_redemption = handle_sql.select_SGSH_amount(today, account['fundaccount'])
@@ -41,30 +41,32 @@ def select(today, fund_accounts, is_first: Bool):
 
         product_history = handle_sql.select_product(yesterday_date_str, accounts[0]['product'])
         print('产品历史数据', product_history)
-        cost = 0
+        # cost = 0
         if isinstance(product_history, (list, tuple)) and len(product_history) == 0:
-            net_yesterday_total_assets = 0
+            # net_yesterday_total_assets = 0
             yesterday_total_assets = 0
         else:
-            yesterday_data = product_history[0]
+            # yesterday_data = product_history[0]
             yesterday_total_assets = float(product_history[0]['totalassets'])
 
-            if not all(yesterday_data.get(key) for key in ['totalassetse', 'netassetse', 'cost']):
-                net_yesterday_total_assets = float(product_history[0]['totalassets'])
-            else:
-                net_yesterday_total_assets = float(product_history[0]['netassetse'])
-                cost = yesterday_data['cost']
+            # if not all(yesterday_data.get(key) for key in ['totalassetse', 'netassetse', 'cost']):
+            #     net_yesterday_total_assets = float(product_history[0]['totalassets'])
+            # else:
+            #     net_yesterday_total_assets = float(product_history[0]['netassetse'])
+            #     cost = yesterday_data['cost']
 
-        print('上一个交易日产品总资产', accounts[0]['product'],net_yesterday_total_assets)
+        print('上一个交易日产品总资产', accounts[0]['product'])
 
         # 计算日涨跌幅
         print(today, accounts[0]['product'], sgsh_amount) 
         if sgsh_amount >= 0:  # 申购
-            net_daily_per = (total_totalassets - abs(sgsh_amount) - net_yesterday_total_assets - cost) / (net_yesterday_total_assets + sgsh_amount) if net_yesterday_total_assets + sgsh_amount != 0 else 0
+            # net_daily_per = (total_totalassets - abs(sgsh_amount) - net_yesterday_total_assets - cost) / (net_yesterday_total_assets + sgsh_amount) if net_yesterday_total_assets + sgsh_amount != 0 else 0
             daily_per = (total_totalassets - abs(sgsh_amount) - yesterday_total_assets) / (yesterday_total_assets + sgsh_amount) if yesterday_total_assets + sgsh_amount != 0 else 0
+            total_daily = total_totalassets - abs(sgsh_amount) - yesterday_total_assets
         else:
-            net_daily_per = (total_totalassets + abs(sgsh_amount) - net_yesterday_total_assets - cost) / net_yesterday_total_assets if net_yesterday_total_assets != 0 else 0
+            # net_daily_per = (total_totalassets + abs(sgsh_amount) - net_yesterday_total_assets - cost) / net_yesterday_total_assets if net_yesterday_total_assets != 0 else 0
             daily_per = (total_totalassets + abs(sgsh_amount) - yesterday_total_assets) / yesterday_total_assets if yesterday_total_assets != 0 else 0
+            total_daily = total_totalassets + abs(sgsh_amount) - yesterday_total_assets
 
 
         today = datetime.strptime(today, '%Y%m%d')
@@ -85,8 +87,8 @@ def select(today, fund_accounts, is_first: Bool):
             monthly_return *= (1 + daily_per)
             monthly_return -= 1
         else:
-            monthly_return = 0
-            monthly_profit = 0
+            monthly_return = daily_per
+            monthly_profit = total_daily
 
         # 计算年涨跌幅和年盈亏
         annual_data = handle_sql.select_product_by_range(last_year_date.strftime('%Y%m%d'), today.strftime('%Y%m%d'), accounts[0]['product'])
@@ -100,8 +102,8 @@ def select(today, fund_accounts, is_first: Bool):
             annual_return *= (1 + daily_per)
             annual_return -= 1
         else:
-            annual_return = 0
-            annual_profit = 0
+            annual_return = daily_per
+            annual_profit = total_daily
 
         # 计算总涨跌幅和总盈亏
         start_date = '19000101'
@@ -116,8 +118,8 @@ def select(today, fund_accounts, is_first: Bool):
             total_return *= (1 + daily_per)
             total_return -= 1
         else:
-            total_return = 0
-            total_profit = 0
+            total_return = daily_per
+            total_profit = total_daily
 
         # 计算净值
         net_value_dic = handle_sql.select_net_value(yesterday_date_str, accounts[0]['product'])
@@ -126,7 +128,7 @@ def select(today, fund_accounts, is_first: Bool):
             yesterday_net_value = net_value_dic[0]['netvalueest']
         else:
             yesterday_net_value = net_value_dic[0]['netvalue']
-        net_value_est = yesterday_net_value * (1 + net_daily_per)
+        net_value_est = yesterday_net_value * (1 + daily_per)
         print('净值', net_value_est)
 
         # 生成结果
@@ -145,11 +147,11 @@ def select(today, fund_accounts, is_first: Bool):
             'Yearly': round(annual_profit, 2),
             'TotalPer': f"{total_return * 100:.2f}%",
             'Total': round(total_profit, 2),
-            'NetValueEst': round(net_value_est, 4),
-            'NetDailyPer': f"{net_daily_per * 100:.2f}%"
+            'NetValueEst': round(net_value_est, 4)
         }
+        # 'NetDailyPer': f"{net_daily_per * 100:.2f}%"
         print('结果', result)
-        if is_first == True:
+        if is_first == False:
             handle_sql.add_product(result)
             handle_sql.add_net_value(today.strftime('%Y%m%d'), accounts[0]['product'], None, round(net_value_est, 4))
         else:

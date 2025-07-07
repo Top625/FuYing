@@ -13,6 +13,7 @@ from datetime import datetime
 
 def export_daily_result():
     today = datetime.today().strftime("%Y%m%d")
+    # today = '20250703'
     yesterday = handle_sql.get_previous_trading_day(today)
 
     config_data = tool.read_ftp_config()
@@ -25,6 +26,26 @@ def export_daily_result():
         for field in data_fields:
             config_key = f'ShanXi_{field}'
             value = shanxi_product_sql[0][field]
+            if field.endswith('per'):
+                color = 'FF0000' if float(value.strip('%')) > 0 else '00FF00'
+                insert_data_to_excel(
+                    xlsx_config[config_key]['row'],
+                    xlsx_config[config_key]['col'],
+                    value,
+                    color
+                )
+            else:
+                insert_data_to_excel(
+                    xlsx_config[config_key]['row'],
+                    xlsx_config[config_key]['col'],
+                    value
+                )
+
+        # 处理张总专户数据
+        zhang_product_sql = handle_sql.select_product(today, '张总专户')
+        for field in data_fields:
+            config_key = f'Zhang_{field}'
+            value = zhang_product_sql[0][field]
             if field.endswith('per'):
                 color = 'FF0000' if float(value.strip('%')) > 0 else '00FF00'
                 insert_data_to_excel(
@@ -160,7 +181,7 @@ def capture_excel_screenshot():
         excel.Application.WindowState = -4137  # xlMaximized
 
         # 等待 Excel 窗口完全加载
-        time.sleep(3)
+        time.sleep(10)
 
         # 进行截图
         screenshot = ImageGrab.grab(bbox=coordinates)

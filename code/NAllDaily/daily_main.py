@@ -1,5 +1,7 @@
 from datetime import datetime
 from time import sleep
+
+from lark_oapi import im
 import handle_sql
 
 import download_ftp
@@ -8,6 +10,7 @@ import get_email
 import deal_all_account
 import daily_result
 import netvalue_chart
+import check_email
 
 
 if __name__ == '__main__':
@@ -19,10 +22,10 @@ if __name__ == '__main__':
         sleep(60*5) 
         get_email.download_email_exl()          # 3:50 获取邮箱中净值并插入到数据库
         sleep(60*5) 
-        deal_all_account.deal()                 # 3:55 将各个产品插入到数据库
+        deal_all_account.deal(False)            # 3:55 将各个产品插入到数据库
         sleep(60*5)
         daily_result.export_daily_result()      # 4:00 发送每日持仓、净值表格
         netvalue_chart.send_netvalue_chart()    # 4:00 发送折线图
-
-        # Todo 检查更新邮箱 先判断 净值有没有数据，没有则再次进行run emial、 allacount
+        sleep(60*60*5)
+        check_email.main()                      # 9:00 检查邮件是否获取成功
         

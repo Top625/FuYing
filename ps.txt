@@ -1,27 +1,30 @@
 \\192.168.1.123   administrator  Quant6688 99
 
 SQL fuying
-wind fuying0725TOP$  zhanghao@egicleasing.com
+
 证券 zhanghao0725 默认 运动 篮球
 基金 zhanghao0625 fuying0725RMB$ 勇士
 
-云机登录地址：https://gtja.yovole.com/Citrix/gtjaWeb/ 
+【富易投研云】
+https://gtja.yovole.com/Citrix/gtjaWeb/ 
 用户：VM-0000H
 新密码：  Crowndaisy@123456 P@ssw0rd4u01..
 
-https://qiye.aliyun.com/       zhanghao@egicleasing.com   fuying0725RMB￥
+【企业邮箱】 https://qiye.aliyun.com/       zhanghao@egicleasing.com   fuying0725RMB￥
 
-
-SmartX专业版客户端及操作手册：
+【SmartX专业版客户端及操作手册：】
 https://xtp.zts.com.cn/service/download/info?id=9&type=downloadProducts
 中泰证券的账户 账号 109157018941 密码 666888 999 
 
-ftp服务器
+【Choice数据】
+账号：gqcfyz0007，密码：sp425043
+账号：gqcfyz0009，密码：rr799375
+
+【wind】
+zhanghao@egicleasing.com     fuying0725TOP$  
+
+【ftp服务器】
 jy.nexvivagroup.com
-21212
 download
 Quant6688
-
-
-数据来源： 万得、富易云电脑、东方财富网、巨潮
-交易：国泰、中泰、华泰
+21212

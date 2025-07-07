@@ -394,6 +394,26 @@ def add_SGSH(param_mapping):
 
 if __name__ == "__main__":
     pass
+
+    # dic = {
+    #     'Date': '20250704',
+    #     'Product': '张总专户',
+    #     'Account': '国泰海通',
+    #     'FundAccount': '9252768',
+    #     'Amount': '30000000'
+    # } 
+    # success = add_SGSH(dic)
+
+    # dic = {
+    #     'Date': '20250704',
+    #     'Product': '九章量化',
+    #     'Account': '国泰海通',
+    #     'FundAccount': '9220717',
+    #     'Amount': '100000'
+    # } 
+    # success = add_SGSH(dic)
+
+
     # select_SGSH_amount('20250604', '109157019055')
 
     # print(select_net_value_by_range('九章量化', 20250604, 20250610))
@@ -408,7 +428,7 @@ if __name__ == "__main__":
     # print(add_net_value('2025-06-18', '九章量化', None, 1.971))
     # print(add_net_value('2025-06-18', '山西证券', None,  1.2604))
     # print(add_net_value('2025-06-18', '尊享2号', None, 1.0649))
-
+    # print(add_net_value('2025-07-03', '张总专户', 1, 1))
 
 
     # print(add_net_value(date, '山西证券', 1, None, 1))
@@ -416,7 +436,7 @@ if __name__ == "__main__":
     # print(add_net_value(date, '山西证券', None, 1.2805))
     # print(add_net_value(date, '尊享2号', None, 1.0688))
 
-    # print(update_net_value(date, product, 1.1, 1.2, 1.3))
+    print(update_net_value('2025-07-03', '张总专户', 1, 1))
     # print(select_SGSH_amount(date, product, account))
 
     # result = {

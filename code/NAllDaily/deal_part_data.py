@@ -50,11 +50,11 @@ def deal_part_data(today, account_file, position_file, deal_local_path, product_
         ]
 
         market_value = (filtered_holdings_df['收盘价'] * filtered_holdings_df['当前拥股']).sum()
-        daily_profit_sum = filtered_holdings_df['当日盈亏'].sum()
+        # daily_profit_sum = filtered_holdings_df['当日盈亏'].sum()
         # 将资产占比列的百分比字符串转换为小数
         filtered_holdings_df['资产占比'] = filtered_holdings_df['资产占比'].str.rstrip('%').astype(float) / 100
         position_ratio_sum = filtered_holdings_df['资产占比'].sum()
-        print('position', market_value, daily_profit_sum, position_ratio_sum)
+        print('position', market_value, position_ratio_sum)
 
         # 从account获取 总资产 可用金额
         # 这里假设每个资金账号对应的数据在 account_file 里是独立的，如果不是需要调整逻辑
@@ -63,7 +63,8 @@ def deal_part_data(today, account_file, position_file, deal_local_path, product_
 
         total_assets = filtered_acconut_df['总资产'].sum()
         cash = filtered_acconut_df['可用金额'].sum()
-        print('account', total_assets, cash)
+        freeze_cash = filtered_acconut_df['冻结金额'].sum()
+        print('account', total_assets, cash, freeze_cash)
 
         # 上一个交易日 
         yesterday_date_str = handle_sql.get_previous_trading_day(today)
@@ -92,9 +93,10 @@ def deal_part_data(today, account_file, position_file, deal_local_path, product_
         print(today, account_name, subscription_redemption) 
         if sgsh_amount >= 0:  # 申购
             daily_return = (total_assets - abs(sgsh_amount) - yesterday_total_assets) / (yesterday_total_assets + abs(sgsh_amount)) if (yesterday_total_assets + abs(sgsh_amount)) != 0 else 0
+            daily_profit_sum = total_assets - abs(sgsh_amount) - yesterday_total_assets
         else:
             daily_return = (total_assets + abs(sgsh_amount) - yesterday_total_assets) / (yesterday_total_assets - abs(sgsh_amount)) if (yesterday_total_assets - abs(sgsh_amount)) != 0 else 0
-
+            daily_profit_sum = total_assets + abs(sgsh_amount) - yesterday_total_assets
         # 将 today 转换为日期类型
         today = datetime.strptime(today, '%Y%m%d')
 
@@ -116,8 +118,8 @@ def deal_part_data(today, account_file, position_file, deal_local_path, product_
             monthly_return *= (1 + daily_return)
             monthly_return -= 1
         else:
-            monthly_return = 0
-            monthly_profit = 0
+            monthly_return = daily_return
+            monthly_profit = daily_profit_sum
 
         # 计算年涨跌幅和年盈亏
         annual_data = handle_sql.select_account_by_range(last_year_date.strftime('%Y%m%d'), today.strftime('%Y%m%d'), fund_account)
@@ -131,8 +133,8 @@ def deal_part_data(today, account_file, position_file, deal_local_path, product_
             annual_return *= (1 + daily_return)
             annual_return -= 1
         else:
-            annual_return = 0
-            annual_profit = 0
+            annual_return = daily_return
+            annual_profit = daily_profit_sum
 
         # 计算总涨跌幅和总盈亏
         start_date = '19000101'
@@ -147,8 +149,8 @@ def deal_part_data(today, account_file, position_file, deal_local_path, product_
             total_return *= (1 + daily_return)
             total_return -= 1
         else:
-            total_return = 0
-            total_profit = 0
+            total_return = daily_return
+            total_profit = daily_profit_sum
 
         # 计算国债逆回购
         reverse = deal_reverse.process_csv_file(deal_local_path, fund_account)
@@ -162,7 +164,7 @@ def deal_part_data(today, account_file, position_file, deal_local_path, product_
             'Product': product_name,
             'TotalAssets': round(total_assets, 2),
             'MarketValue': round(market_value, 2),
-            'Cash': round(cash + reverse, 2),
+            'Cash': round(cash + reverse + freeze_cash, 2),
             'Position': f"{position_ratio_sum * 100:.2f}%",
             'DailyPer': f"{daily_return * 100:.2f}%",
             'Daily': round(daily_profit_sum, 2),
